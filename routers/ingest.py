@@ -7,6 +7,7 @@ from services.ip_lookup import lookup_ip
 from services.link_service import get_link_by_slug
 from services.supabase_client import supabase
 from services.device_resolver import resolve_device_identity, resolve_real_os
+from services.webhook_service import send_webhook_notification
 
 router = APIRouter()
 
@@ -210,5 +211,11 @@ async def ingest(payload: TrackPayload, request: Request):
             supabase.table("tracking_logs").insert(clean_entry).execute()
         except Exception:
             pass
+
+    # Dispatch real-time alert (Telegram / Webhook)
+    try:
+        await send_webhook_notification(log_entry)
+    except Exception:
+        pass
 
     return {"status": "ok"}
