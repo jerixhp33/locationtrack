@@ -9,10 +9,49 @@ FIELDS = (
 SKIP_IPS = {"127.0.0.1", "::1", "testclient", "localhost"}
 
 ABSTRACT_API_KEY = os.getenv("ABSTRACT_API_KEY", "2f5710e8542249a8b6a571ddb09fbee7")
+IPINFO_TOKEN = os.getenv("IPINFO_TOKEN", "b62b5ede29146c")
+
+
+async def _lookup_ipinfo(ip: str) -> dict:
+    """IPinfo.io lookup using your token."""
+    if not IPINFO_TOKEN:
+        return {}
+    try:
+        url = f"https://ipinfo.io/{ip}/json?token={IPINFO_TOKEN}"
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            r = await client.get(url)
+            data = r.json()
+        
+        loc_str = data.get("loc", "")
+        if not loc_str or "," not in loc_str:
+            return {}
+
+        lat_str, lng_str = loc_str.split(",")
+        lat = float(lat_str)
+        lng = float(lng_str)
+
+        return {
+            "ip_address":   data.get("ip"),
+            "country":      data.get("country"),
+            "country_code": data.get("country"),
+            "region":       data.get("region"),
+            "city":         data.get("city"),
+            "zip":          data.get("postal"),
+            "ip_lat":       lat,
+            "ip_lng":       lng,
+            "timezone":     data.get("timezone"),
+            "isp":          data.get("org"),
+            "org":          data.get("org"),
+            "mobile":       False,
+            "proxy":        False,
+            "hosting":      False,
+        }
+    except Exception:
+        return {}
 
 
 async def _lookup_abstractapi(ip: str) -> dict:
-    """Primary / Premium: Abstract IP Intelligence API."""
+    """Abstract IP Intelligence API."""
     if not ABSTRACT_API_KEY:
         return {}
     try:
@@ -49,7 +88,7 @@ async def _lookup_abstractapi(ip: str) -> dict:
 
 
 async def _lookup_ipapi(ip: str) -> dict:
-    """Secondary: ip-api.com (free, no key, 45 req/min)."""
+    """ip-api.com (free, no key, 45 req/min)."""
     try:
         async with httpx.AsyncClient(timeout=4.0) as client:
             r = await client.get(
@@ -80,7 +119,7 @@ async def _lookup_ipapi(ip: str) -> dict:
 
 
 async def _lookup_ipwho(ip: str) -> dict:
-    """Fallback: ipwho.is (free, no key, 10,000/mo)."""
+    """ipwho.is (free, no key, 10,000/mo)."""
     try:
         async with httpx.AsyncClient(timeout=4.0) as client:
             r = await client.get(f"https://ipwho.is/{ip}")
@@ -110,26 +149,31 @@ async def _lookup_ipwho(ip: str) -> dict:
 
 async def lookup_ip(ip: str) -> dict:
     """
-    Multi-source IP geolocation with automatic fallback.
-    Order of preference:
-    1. Abstract IP Intelligence API (User Key)
-    2. ip-api.com
-    3. ipwho.is
+    Multi-source IP geolocation with automatic fallback:
+    1. IPinfo.io (Token: b62b5ede29146c - High precision city & coordinates)
+    2. Abstract IP Intelligence API
+    3. ip-api.com
+    4. ipwho.is
     """
     if not ip or ip in SKIP_IPS:
         return {}
 
-    # 1. Try Abstract API first
+    # 1. Try IPinfo.io (Your Token)
+    result = await _lookup_ipinfo(ip)
+    if result and result.get("ip_lat"):
+        return result
+
+    # 2. Try Abstract API
     result = await _lookup_abstractapi(ip)
     if result and result.get("ip_lat"):
         return result
 
-    # 2. Fallback to ip-api.com
+    # 3. Fallback to ip-api.com
     result = await _lookup_ipapi(ip)
     if result and result.get("ip_lat"):
         return result
 
-    # 3. Fallback to ipwho.is
+    # 4. Fallback to ipwho.is
     result = await _lookup_ipwho(ip)
     if result and result.get("ip_lat"):
         return result
