@@ -1,5 +1,5 @@
 import os
-from fastapi import APIRouter, Form
+from fastapi import APIRouter, Form, Request
 from fastapi.responses import JSONResponse
 from services.link_service import create_tracking_link, deactivate_link
 
@@ -8,6 +8,7 @@ router = APIRouter()
 
 @router.post("/api/links/create")
 async def create_link(
+    request:      Request,
     case_id:      str = Form(...),
     label:        str = Form(...),
     created_by:   str = Form(default="investigator"),
@@ -19,8 +20,14 @@ async def create_link(
     if not link:
         return JSONResponse({"error": "Failed to create link"}, status_code=500)
 
-    base_url = os.getenv("BASE_URL", "http://localhost:8000")
-    tracking_url = f"{base_url}/t/{link['slug']}"
+    # Dynamic base URL resolution (respecting Vercel / reverse proxy HTTPS headers)
+    base_url = os.getenv("BASE_URL")
+    if not base_url:
+        forwarded_proto = request.headers.get("x-forwarded-proto", "https" if request.url.scheme == "https" else "http")
+        host = request.headers.get("host") or request.url.netloc
+        base_url = f"{forwarded_proto}://{host}"
+
+    tracking_url = f"{base_url.rstrip('/')}/t/{link['slug']}"
 
     return {
         "tracking_url": tracking_url,
