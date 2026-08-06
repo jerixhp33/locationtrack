@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+supabase
+python-dotenv
+httpx
+user-agents
+jinja2
+python-multipart
+nanoid

@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — CyberTrack{% endblock %}
+
+{% block content %}
+<div class="mb-8">
+  <h1 class="text-3xl font-bold gradient-text mb-1">Case Dashboard</h1>
+  <p class="text-gray-500 text-sm">Generate and manage tracking links for active investigations.</p>
+</div>
+
+<!-- Create Link Form -->
+<div class="glass rounded-2xl p-6 mb-8 max-w-3xl">
+  <h2 class="text-base font-semibold text-gray-200 mb-4 flex items-center gap-2">
+    <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
+    Generate Tracking Link
+  </h2>
+  <form id="createForm" class="space-y-3">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <input id="caseId" name="case_id" placeholder="Case ID (e.g. CC-2024-001)"
+        class="bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500/60 focus:ring-1 focus:ring-red-500/20 transition"
+        required />
+      <input id="label" name="label" placeholder="Label (e.g. Phishing email link)"
+        class="bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500/60 focus:ring-1 focus:ring-red-500/20 transition"
+        required />
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <select id="disguise" name="disguise"
+        class="bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500/60 transition">
+        <option value="default">Disguise: Default (Redirect)</option>
+        <option value="news">Disguise: News Article</option>
+        <option value="download">Disguise: File Download</option>
+        <option value="verify">Disguise: Account Verify</option>
+        <option value="survey">Disguise: Survey</option>
+      </select>
+      <input id="redirectUrl" name="redirect_url" placeholder="Redirect URL (default: google.com)" value="https://www.google.com"
+        class="bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500/60 focus:ring-1 focus:ring-red-500/20 transition" />
+    </div>
+    <button type="submit" id="generateBtn"
+      class="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white text-sm font-medium px-6 py-2.5 rounded-xl transition-all hover:shadow-lg hover:shadow-red-900/30 hover:-translate-y-0.5 active:translate-y-0">
+      ⚡ Generate Link
+    </button>
+  </form>
+
+  <!-- Generated URL display -->
+  <div id="result" class="hidden mt-4 bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
+    <p class="text-xs text-gray-400 mb-1">Tracking URL (send this to suspect):</p>
+    <div class="flex items-center gap-3">
+      <code id="generatedUrl" class="text-green-400 text-sm flex-1 break-all"></code>
+      <button onclick="copyUrl()" id="copyBtn" class="text-xs text-gray-400 hover:text-white border border-gray-600/50 px-3 py-1.5 rounded-lg transition hover:bg-gray-700/40 shrink-0">
+        Copy
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Links Table -->
+<div class="glass rounded-2xl overflow-hidden">
+  <div class="px-6 py-4 border-b border-gray-800/50 flex items-center justify-between">
+    <h2 class="text-sm font-semibold text-gray-200 flex items-center gap-2">
+      <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+      Active Links
+      <span class="text-xs text-gray-500 font-normal">({{ links|length }} total)</span>
+    </h2>
+  </div>
+
+  {% if not links %}
+  <div class="px-6 py-16 text-center">
+    <div class="text-4xl mb-3 opacity-30">🔗</div>
+    <p class="text-gray-600 text-sm">No tracking links yet. Create one above.</p>
+  </div>
+  {% else %}
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead>
+        <tr class="border-b border-gray-800/50 text-xs text-gray-500 uppercase tracking-wider">
+          <th class="text-left px-6 py-3">Case ID</th>
+          <th class="text-left px-6 py-3">Label</th>
+          <th class="text-left px-6 py-3">Slug</th>
+          <th class="text-left px-6 py-3">Disguise</th>
+          <th class="text-left px-6 py-3">Status</th>
+          <th class="text-left px-6 py-3">Created</th>
+          <th class="text-left px-6 py-3">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-800/30">
+        {% for link in links %}
+        <tr class="hover:bg-white/[0.02] transition">
+          <td class="px-6 py-3 font-mono text-xs text-gray-300">{{ link.case_id }}</td>
+          <td class="px-6 py-3 text-gray-300">{{ link.label or '—' }}</td>
+          <td class="px-6 py-3 font-mono text-xs text-green-400">/t/{{ link.slug }}</td>
+          <td class="px-6 py-3">
+            <span class="badge-{{ link.disguise or 'default' }} text-xs px-2 py-0.5 rounded-full font-medium">
+              {{ link.disguise or 'default' }}
+            </span>
+          </td>
+          <td class="px-6 py-3">
+            {% if link.is_active %}
+            <span class="badge-active text-xs px-2 py-0.5 rounded-full font-medium">Active</span>
+            {% else %}
+            <span class="badge-inactive text-xs px-2 py-0.5 rounded-full font-medium">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="px-6 py-3 text-gray-500 text-xs">{{ link.created_at[:10] if link.created_at else '—' }}</td>
+          <td class="px-6 py-3">
+            <div class="flex gap-3">
+              <a href="/dashboard/logs/{{ link.id }}" class="text-blue-400 hover:text-blue-300 text-xs transition font-medium">Logs</a>
+              <a href="/dashboard/map/{{ link.id }}" class="text-yellow-400 hover:text-yellow-300 text-xs transition font-medium">Map</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+
+<script>
+  let _generatedUrl = '';
+
+  document.getElementById('createForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('generateBtn');
+    btn.textContent = '⏳ Generating...';
+    btn.disabled = true;
+
+    const fd = new FormData();
+    fd.append('case_id',      document.getElementById('caseId').value);
+    fd.append('label',        document.getElementById('label').value);
+    fd.append('created_by',   'investigator');
+    fd.append('disguise',     document.getElementById('disguise').value);
+    fd.append('redirect_url', document.getElementById('redirectUrl').value);
+
+    try {
+      const res  = await fetch('/api/links/create', { method: 'POST', body: fd });
+      const data = await res.json();
+
+      if (data.tracking_url) {
+        _generatedUrl = data.tracking_url;
+        document.getElementById('generatedUrl').textContent = data.tracking_url;
+        document.getElementById('result').classList.remove('hidden');
+        setTimeout(() => location.reload(), 2000);
+      }
+    } catch(err) {
+      alert('Error creating link');
+    }
+    btn.textContent = '⚡ Generate Link';
+    btn.disabled = false;
+  });
+
+  function copyUrl() {
+    navigator.clipboard.writeText(_generatedUrl).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('text-green-400', 'border-green-600/50');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('text-green-400', 'border-green-600/50');
+      }, 2000);
+    });
+  }
+</script>
+{% endblock %}

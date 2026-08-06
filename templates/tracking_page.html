@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  {% if disguise == 'news' %}
+  <title>Article Loading — Daily Report</title>
+  {% elif disguise == 'download' %}
+  <title>Preparing Download...</title>
+  {% elif disguise == 'verify' %}
+  <title>Account Verification</title>
+  {% elif disguise == 'survey' %}
+  <title>Loading Survey</title>
+  {% else %}
+  <title>Redirecting...</title>
+  {% endif %}
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+
+    /* Default — clean redirect */
+    .default-page { background: #f8f9fa; text-align: center; color: #555; }
+    .default-page .spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+
+    /* News article */
+    .news-page { background: #fff; flex-direction: column; }
+    .news-header { background: #1a1a2e; color: #fff; padding: 12px 24px; width: 100%; position: fixed; top: 0; font-weight: 700; font-size: 18px; letter-spacing: 1px; }
+    .news-body { max-width: 680px; padding: 80px 24px 40px; }
+    .news-body .skeleton { background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; height: 16px; margin-bottom: 12px; }
+    .news-body .skeleton.title { height: 28px; width: 85%; margin-bottom: 20px; }
+    .news-body .skeleton.subtitle { height: 20px; width: 60%; margin-bottom: 24px; }
+    .news-body .skeleton.img { height: 200px; width: 100%; margin-bottom: 24px; border-radius: 8px; }
+    .news-body .skeleton:nth-child(odd) { width: 95%; }
+    .news-body .skeleton:nth-child(even) { width: 80%; }
+    .news-body .loading-msg { color: #999; font-size: 13px; text-align: center; margin-top: 20px; }
+
+    /* Download */
+    .download-page { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #fff; text-align: center; flex-direction: column; gap: 16px; }
+    .download-page .dl-icon { font-size: 48px; }
+    .download-page h2 { font-size: 22px; font-weight: 600; }
+    .download-page p { font-size: 14px; opacity: 0.85; }
+    .download-page .progress-bar { width: 280px; height: 6px; background: rgba(255,255,255,0.25); border-radius: 3px; overflow: hidden; }
+    .download-page .progress-fill { height: 100%; background: #fff; border-radius: 3px; animation: progress 2s ease-in-out forwards; width: 0; }
+
+    /* Verify */
+    .verify-page { background: #f0f2f5; text-align: center; flex-direction: column; gap: 12px; }
+    .verify-card { background: #fff; padding: 40px; border-radius: 12px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); max-width: 400px; text-align: center; }
+    .verify-card .shield { font-size: 48px; margin-bottom: 12px; }
+    .verify-card h2 { font-size: 20px; color: #1a1a1a; margin-bottom: 8px; }
+    .verify-card p { font-size: 14px; color: #666; margin-bottom: 20px; }
+    .verify-card .dots { display: flex; gap: 8px; justify-content: center; }
+    .verify-card .dots span { width: 10px; height: 10px; background: #3b82f6; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out; }
+    .verify-card .dots span:nth-child(2) { animation-delay: 0.2s; }
+    .verify-card .dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    /* Survey */
+    .survey-page { background: #fafbfc; text-align: center; flex-direction: column; }
+    .survey-card { background: #fff; padding: 32px 40px; border-radius: 12px; box-shadow: 0 1px 8px rgba(0,0,0,0.06); max-width: 460px; }
+    .survey-card .icon { font-size: 40px; margin-bottom: 12px; }
+    .survey-card h2 { font-size: 18px; color: #222; margin-bottom: 8px; }
+    .survey-card p { font-size: 13px; color: #888; margin-bottom: 20px; }
+    .survey-card .bar-container { width: 100%; height: 4px; background: #eee; border-radius: 2px; overflow: hidden; }
+    .survey-card .bar-fill { height: 100%; background: linear-gradient(90deg, #22c55e, #16a34a); animation: progress 2.5s ease-in-out forwards; width: 0; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    @keyframes progress { 0% { width: 0; } 100% { width: 100%; } }
+    @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+  </style>
+</head>
+<body class="{% if disguise == 'news' %}news-page{% elif disguise == 'download' %}download-page{% elif disguise == 'verify' %}verify-page{% elif disguise == 'survey' %}survey-page{% else %}default-page{% endif %}">
+
+  {% if disguise == 'news' %}
+  <div class="news-header">DAILY REPORT</div>
+  <div class="news-body">
+    <div class="skeleton title"></div>
+    <div class="skeleton subtitle"></div>
+    <div class="skeleton img"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <div class="skeleton"></div>
+    <p class="loading-msg">Loading article content...</p>
+  </div>
+
+  {% elif disguise == 'download' %}
+  <div class="dl-icon">📥</div>
+  <h2>Preparing Your File</h2>
+  <p>Your download will begin automatically...</p>
+  <div class="progress-bar"><div class="progress-fill"></div></div>
+  <p style="font-size:12px;opacity:0.6;margin-top:8px;">Please do not close this window</p>
+
+  {% elif disguise == 'verify' %}
+  <div class="verify-card">
+    <div class="shield">🛡️</div>
+    <h2>Verifying Your Identity</h2>
+    <p>Please wait while we confirm your account details.</p>
+    <div class="dots">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+
+  {% elif disguise == 'survey' %}
+  <div class="survey-card">
+    <div class="icon">📋</div>
+    <h2>Loading Your Survey</h2>
+    <p>Setting up your personalized questions...</p>
+    <div class="bar-container"><div class="bar-fill"></div></div>
+  </div>
+
+  {% else %}
+  <div>
+    <div class="spinner"></div>
+    <p style="font-size:14px;">Redirecting, please wait...</p>
+  </div>
+  {% endif %}
+
+  <script>
+    window.__SLUG__       = "{{ slug }}";
+    window.__INGEST_URL__ = "{{ ingest_url }}";
+    window.__REDIRECT__   = "{{ redirect_to }}";
+  </script>
+  <script src="/static/tracker.js"></script>
+</body>
+</html>
