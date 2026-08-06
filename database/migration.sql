@@ -45,3 +45,5 @@ ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS gps_altitude         FLOAT;
 ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS gps_heading          FLOAT;
 ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS gps_speed            FLOAT;
 ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS device_orientation   TEXT;
+ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS captured_pincode     TEXT;
+
