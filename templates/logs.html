@@ -193,12 +193,15 @@
                   <div><span class="text-slate-500 w-24 inline-block">GPS Method:</span> <span class="text-emerald-400 font-bold">Hardware GPS Satellite</span></div>
                   <div><span class="text-slate-500 w-24 inline-block">Coordinates:</span> <a href="https://maps.google.com/?q={{ log.gps_lat }},{{ log.gps_lng }}" target="_blank" class="text-emerald-400 hover:underline font-mono font-bold">{{ "%.6f"|format(log.gps_lat) }}, {{ "%.6f"|format(log.gps_lng) }}</a></div>
                   <div><span class="text-slate-500 w-24 inline-block">Accuracy:</span> <span class="text-emerald-300 font-bold">±{{ log.gps_accuracy|int if log.gps_accuracy else '?' }} meters (Street Level)</span></div>
+                  {% if log.gps_speed %}
+                  <div><span class="text-slate-500 w-24 inline-block">Movement Speed:</span> <span class="text-emerald-300 font-mono font-bold">{{ "%.1f"|format(log.gps_speed * 3.6) }} km/h ({{ "%.1f"|format(log.gps_speed) }} m/s)</span></div>
+                  {% endif %}
                   {% if log.gps_altitude %}
                   <div><span class="text-slate-500 w-24 inline-block">Altitude:</span> {{ log.gps_altitude }} m</div>
                   {% endif %}
                   {% else %}
-                  <div><span class="text-slate-500 w-24 inline-block">Precision:</span> <span class="text-yellow-400">IP Geolocation (ISP Hub)</span></div>
-                  <div><span class="text-slate-500 w-24 inline-block">Coordinates:</span> <span class="font-mono text-slate-400">{{ log.latitude }}, {{ log.longitude }}</span></div>
+                  <div><span class="text-slate-500 w-24 inline-block">Precision:</span> <span class="text-yellow-400 font-bold">IP Geolocation (ISP Hub)</span></div>
+                  <div><span class="text-slate-500 w-24 inline-block">Coordinates:</span> <span class="font-mono text-yellow-300 font-bold">{{ log.ip_lat if log.ip_lat is not none else (log.latitude or '—') }}, {{ log.ip_lng if log.ip_lng is not none else (log.longitude or '—') }}</span></div>
                   {% endif %}
                   <div><span class="text-slate-500 w-24 inline-block">City / Region:</span> {{ log.city or '—' }}, {{ log.region or '' }}</div>
                   <div><span class="text-slate-500 w-24 inline-block">Country:</span> {{ log.country or '—' }} ({{ log.country_code or '' }})</div>
