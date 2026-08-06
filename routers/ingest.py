@@ -8,6 +8,7 @@ from services.link_service import get_link_by_slug
 from services.supabase_client import supabase
 from services.device_resolver import resolve_device_identity, resolve_real_os
 from services.webhook_service import send_webhook_notification
+from services.reverse_geocoder import reverse_geocode_gps
 
 router = APIRouter()
 
@@ -95,6 +96,17 @@ async def ingest(payload: TrackPayload, request: Request):
 
     ip = _get_real_ip(request)
     geo = await lookup_ip(ip)
+
+    # If exact GPS is available, reverse geocode to get the TRUE street/suburb/city
+    if payload.gps_lat and payload.gps_lng:
+        gps_address = await reverse_geocode_gps(payload.gps_lat, payload.gps_lng)
+        if gps_address:
+            geo["city"] = gps_address["city"]
+            geo["region"] = gps_address["region"]
+            if gps_address.get("country"):
+                geo["country"] = gps_address["country"]
+            if gps_address.get("zip"):
+                geo["zip"] = gps_address["zip"]
 
     ua_string = payload.user_agent or request.headers.get("user-agent", "")
     ua = ua_parse(ua_string)
