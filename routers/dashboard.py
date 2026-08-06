@@ -1,10 +1,13 @@
+import os
+from pathlib import Path
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from services.link_service import get_all_links, get_logs_for_link
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
+TEMPLATES_DIR = os.path.join(Path(__file__).resolve().parent.parent, "templates")
+templates = Jinja2Templates(directory=TEMPLATES_DIR)
 
 
 @router.get("/dashboard", response_class=HTMLResponse)

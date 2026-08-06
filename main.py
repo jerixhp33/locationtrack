@@ -1,8 +1,13 @@
+import os
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import RedirectResponse
 
 from routers import track, ingest, links, dashboard, api_stats
+
+BASE_DIR = Path(__file__).resolve().parent
+STATIC_DIR = os.path.join(BASE_DIR, "static")
 
 app = FastAPI(
     title="CyberTrack",
@@ -13,7 +18,8 @@ app = FastAPI(
 )
 
 # Static files (tracker.js)
-app.mount("/static", StaticFiles(directory="static"), name="static")
+if os.path.exists(STATIC_DIR):
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
 # Routers
 app.include_router(track.router)
