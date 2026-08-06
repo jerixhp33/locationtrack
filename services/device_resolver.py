@@ -24,15 +24,19 @@ MODEL_MAPPINGS = {
     "SM-F936": ("Samsung", "Galaxy Z Fold 4"),
     "SM-F721": ("Samsung", "Galaxy Z Flip 4"),
     # Samsung Galaxy A series
+    "SM-A556": ("Samsung", "Galaxy A55 5G"),
     "SM-A546": ("Samsung", "Galaxy A54 5G"),
     "SM-A536": ("Samsung", "Galaxy A53 5G"),
     "SM-A528": ("Samsung", "Galaxy A52s 5G"),
     "SM-A526": ("Samsung", "Galaxy A52 5G"),
     "SM-A525": ("Samsung", "Galaxy A52 4G"),
+    "SM-A356": ("Samsung", "Galaxy A35 5G"),
     "SM-A346": ("Samsung", "Galaxy A34 5G"),
     "SM-A336": ("Samsung", "Galaxy A33 5G"),
+    "SM-A256": ("Samsung", "Galaxy A25 5G"),
     "SM-A245": ("Samsung", "Galaxy A24"),
     "SM-A236": ("Samsung", "Galaxy A23 5G"),
+    "SM-A156": ("Samsung", "Galaxy A15 5G"),
     "SM-A146": ("Samsung", "Galaxy A14 5G"),
     "SM-A145": ("Samsung", "Galaxy A14 4G"),
     "SM-A057": ("Samsung", "Galaxy A05s"),
@@ -50,6 +54,8 @@ MODEL_MAPPINGS = {
     "CPH2467": ("OnePlus", "Nord CE 3 Lite"),
     "CPH2569": ("OnePlus", "Nord CE 4"),
     # Google Pixel
+    "Pixel 9 Pro": ("Google", "Pixel 9 Pro"),
+    "Pixel 9":     ("Google", "Pixel 9"),
     "Pixel 8 Pro": ("Google", "Pixel 8 Pro"),
     "Pixel 8":     ("Google", "Pixel 8"),
     "Pixel 8a":    ("Google", "Pixel 8a"),
@@ -98,27 +104,61 @@ GPU_CHIPSETS = [
 ]
 
 
+def _is_browser_version(ver: str) -> bool:
+    """
+    Detect if a 'platformVersion' is actually a browser major version
+    rather than a real OS platform version.
+    Chrome on Android with frozen UA sends browser version like '150.0.0'
+    as platformVersion in some edge cases.
+    Real Android platformVersion is 8.0.0 - 15.x.x (single-digit major).
+    """
+    if not ver:
+        return False
+    try:
+        major = int(ver.split(".")[0])
+        # Real Android versions are 8-16, real Windows are 0-15
+        # Browser versions are typically 100+
+        return major > 20
+    except (ValueError, IndexError):
+        return False
+
+
 def resolve_real_os(os_family: str, os_version: str, client_platform_ver: Optional[str] = None) -> str:
-    """Resolve true Android / Windows OS version from High-Entropy client hints."""
+    """
+    Resolve true Android / Windows OS version from High-Entropy client hints.
+    Handles the common case where Client Hints fail and only the frozen
+    UA string 'Android 10' is available.
+    """
+    # Filter out browser version being mistakenly sent as platformVersion
+    if _is_browser_version(client_platform_ver):
+        client_platform_ver = None
+
     if os_family == "Android":
         if client_platform_ver:
             major = client_platform_ver.split(".")[0]
-            if major in ["15", "14", "13", "12", "11", "10", "9", "8"]:
-                names = {
-                    "15": "Android 15 (Vanilla Ice Cream)",
-                    "14": "Android 14 (Upside Down Cake)",
-                    "13": "Android 13 (Tiramisu)",
-                    "12": "Android 12 (Snow Cone)",
-                    "11": "Android 11 (Red Velvet Cake)",
-                    "10": "Android 10 (Quince Tart)"
-                }
-                return names.get(major, f"Android {major}")
+            names = {
+                "16": "Android 16",
+                "15": "Android 15 (Vanilla Ice Cream)",
+                "14": "Android 14 (Upside Down Cake)",
+                "13": "Android 13 (Tiramisu)",
+                "12": "Android 12 (Snow Cone)",
+                "11": "Android 11 (Red Velvet Cake)",
+                "10": "Android 10 (Quince Tart)",
+                "9":  "Android 9 (Pie)",
+                "8":  "Android 8 (Oreo)",
+            }
+            if major in names:
+                return names[major]
+            return f"Android {major}"
+
+        # If os_version is the frozen "10", mark it as unknown rather than misleading
+        if os_version == "10":
+            return "Android (Version hidden by browser)"
         if os_version:
             return f"Android {os_version}"
         return "Android"
 
     if os_family == "Windows":
-        # Windows 11 platformVersion is >= 13.0.0 in Client Hints
         if client_platform_ver:
             try:
                 major = int(client_platform_ver.split(".")[0])

