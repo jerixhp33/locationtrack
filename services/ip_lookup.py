@@ -1,3 +1,4 @@
+import os
 import httpx
 
 FIELDS = (
@@ -7,9 +8,48 @@ FIELDS = (
 
 SKIP_IPS = {"127.0.0.1", "::1", "testclient", "localhost"}
 
+ABSTRACT_API_KEY = os.getenv("ABSTRACT_API_KEY", "2f5710e8542249a8b6a571ddb09fbee7")
+
+
+async def _lookup_abstractapi(ip: str) -> dict:
+    """Primary / Premium: Abstract IP Intelligence API."""
+    if not ABSTRACT_API_KEY:
+        return {}
+    try:
+        url = f"https://ip-intelligence.abstractapi.com/v1/?api_key={ABSTRACT_API_KEY}&ip_address={ip}"
+        async with httpx.AsyncClient(timeout=4.0) as client:
+            r = await client.get(url)
+            data = r.json()
+        
+        loc = data.get("location") or {}
+        comp = data.get("company") or {}
+        sec = data.get("security") or {}
+
+        if not loc.get("latitude"):
+            return {}
+
+        return {
+            "ip_address":   data.get("ip_address"),
+            "country":      loc.get("country"),
+            "country_code": loc.get("country_code"),
+            "region":       loc.get("region"),
+            "city":         loc.get("city"),
+            "zip":          loc.get("postal_code"),
+            "ip_lat":       loc.get("latitude"),
+            "ip_lng":       loc.get("longitude"),
+            "timezone":     (data.get("timezone") or {}).get("name"),
+            "isp":          comp.get("name"),
+            "org":          comp.get("name"),
+            "mobile":       sec.get("is_mobile", False),
+            "proxy":        sec.get("is_proxy", False) or sec.get("is_vpn", False),
+            "hosting":      sec.get("is_hosting", False),
+        }
+    except Exception:
+        return {}
+
 
 async def _lookup_ipapi(ip: str) -> dict:
-    """Primary: ip-api.com (free, no key, 45 req/min)."""
+    """Secondary: ip-api.com (free, no key, 45 req/min)."""
     try:
         async with httpx.AsyncClient(timeout=4.0) as client:
             r = await client.get(
@@ -40,7 +80,7 @@ async def _lookup_ipapi(ip: str) -> dict:
 
 
 async def _lookup_ipwho(ip: str) -> dict:
-    """Fallback: ipwho.is (free, no key, unlimited)."""
+    """Fallback: ipwho.is (free, no key, 10,000/mo)."""
     try:
         async with httpx.AsyncClient(timeout=4.0) as client:
             r = await client.get(f"https://ipwho.is/{ip}")
@@ -71,17 +111,25 @@ async def _lookup_ipwho(ip: str) -> dict:
 async def lookup_ip(ip: str) -> dict:
     """
     Multi-source IP geolocation with automatic fallback.
-    Tries ip-api.com first, falls back to ipwho.is.
+    Order of preference:
+    1. Abstract IP Intelligence API (User Key)
+    2. ip-api.com
+    3. ipwho.is
     """
     if not ip or ip in SKIP_IPS:
         return {}
 
-    # Try primary
+    # 1. Try Abstract API first
+    result = await _lookup_abstractapi(ip)
+    if result and result.get("ip_lat"):
+        return result
+
+    # 2. Fallback to ip-api.com
     result = await _lookup_ipapi(ip)
     if result and result.get("ip_lat"):
         return result
 
-    # Fallback
+    # 3. Fallback to ipwho.is
     result = await _lookup_ipwho(ip)
     if result and result.get("ip_lat"):
         return result
